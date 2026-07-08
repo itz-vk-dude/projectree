@@ -4,8 +4,8 @@ An AI-driven platform for student project discovery, featuring personalized ML r
 
 ## 👥 Developers
 * **Vasanthakumar S**
-* **Sanjay M**
-* **Suriyaprakash**
+* **Suriya Prakash A**
+* * **Sanjai M**
 
 ---
 
