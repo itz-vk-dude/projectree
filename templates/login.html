@@ -11,6 +11,7 @@
   <div class="card border-0 shadow-lg" style="background: rgba(4,13,10,0.85); border: 1px solid rgba(45,106,79,0.3) !important; border-radius: 20px; backdrop-filter: blur(10px);">
     <div class="card-body p-4">
       <form method="POST" action="/login">
+        <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
         <div class="mb-3">
           <label class="form-label text-white-50 small fw-semibold">EMAIL</label>
           <input type="email" name="email" class="form-control bg-dark text-white border-secondary"
