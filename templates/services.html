@@ -1,0 +1,92 @@
+{% extends 'base.html' %}
+{% block content %}
+<div class="container py-5 mt-4">
+    <!-- Header Section -->
+    <div class="text-center mb-5 animate__animated animate__fadeIn">
+        <h1 class="display-3 fw-bold text-white mb-3">Our Ecosystem Services</h1>
+        <p class="lead text-white-50 mx-auto" style="max-width: 800px;">
+            The Projectree isn't just a list of ideas—it's a career-accelerator designed to transition developers into engineers through structured cultivation.
+        </p>
+    </div>
+
+    <!-- Services Grid -->
+    <div class="row g-4 mt-2">
+        
+        <!-- Service 1: ML Discovery -->
+        <div class="col-md-4 animate__animated animate__fadeInUp" style="animation-delay: 0.1s;">
+            <div class="glass-card h-100 p-4 border-top border-success border-4">
+                <div class="h1 mb-3">🤖</div>
+                <h4 class="text-white fw-bold">ML Discovery Engine</h4>
+                <p class="text-white-50 small">We use Content-Based Filtering to analyze 30,000 projects instantly, matching your technical DNA with the perfect project path.</p>
+            </div>
+        </div>
+
+        <!-- Service 2: Greenhouse Tracking -->
+        <div class="col-md-4 animate__animated animate__fadeInUp" style="animation-delay: 0.2s;">
+            <div class="glass-card h-100 p-4 border-top border-success border-4">
+                <div class="h1 mb-3">🌿</div>
+                <h4 class="text-white fw-bold">Greenhouse Tracker</h4>
+                <p class="text-white-50 small">A milestone-based tracking system that helps you manage complex builds. Check off steps and watch your progress bar grow in real-time.</p>
+            </div>
+        </div>
+
+        <!-- Service 3: Skill Tree Visuals -->
+        <div class="col-md-4 animate__animated animate__fadeInUp" style="animation-delay: 0.3s;">
+            <div class="glass-card h-100 p-4 border-top border-success border-4">
+                <div class="h1 mb-3">🌳</div>
+                <h4 class="text-white fw-bold">Visual Skill Forest</h4>
+                <p class="text-white-50 small">Gamified progression. As you master projects, a digital tree on your dashboard grows, creating a visual map of your engineering expertise.</p>
+            </div>
+        </div>
+
+        <!-- Service 4: Portfolio Generator -->
+        <div class="col-md-4 animate__animated animate__fadeInUp" style="animation-delay: 0.4s;">
+            <div class="glass-card h-100 p-4 border-top border-success border-4">
+                <div class="h1 mb-3">📄</div>
+                <h4 class="text-white fw-bold">Verified Portfolio</h4>
+                <p class="text-white-50 small">One-click export. Turn your mastered forest into a professional engineering portfolio ready for job applications and recruiters.</p>
+            </div>
+        </div>
+
+        <!-- Service 5: Career Assistant -->
+        <div class="col-md-4 animate__animated animate__fadeInUp" style="animation-delay: 0.5s;">
+            <div class="glass-card h-100 p-4 border-top border-success border-4">
+                <div class="h1 mb-3">💬</div>
+                <h4 class="text-white fw-bold">AI Career Guide</h4>
+                <p class="text-white-50 small">Our Gemini-powered chatbot provides resume tips, job market analysis, and real-time guidance on your engineering journey.</p>
+            </div>
+        </div>
+
+        <!-- Service 6: Global Forest Feed -->
+        <div class="col-md-4 animate__animated animate__fadeInUp" style="animation-delay: 0.6s;">
+            <div class="glass-card h-100 p-4 border-top border-success border-4">
+                <div class="h1 mb-3">🌍</div>
+                <h4 class="text-white fw-bold">Global Forest Feed</h4>
+                <p class="text-white-50 small">See what the world is building. A live feed of projects currently being cultivated or mastered by engineers across the ecosystem.</p>
+            </div>
+        </div>
+
+    </div>
+
+    <!-- Call to Action -->
+    <div class="text-center mt-5 py-5 animate__animated animate__fadeIn">
+        <h3 class="text-white mb-4">Ready to start your first branch?</h3>
+        <a href="/quiz" class="btn btn-primary-custom px-5 py-3 fs-5">Begin Your Journey</a>
+    </div>
+</div>
+
+<style>
+    .glass-card {
+        background: rgba(255, 255, 255, 0.03);
+        border: 1px solid rgba(255, 255, 255, 0.1);
+        backdrop-filter: blur(10px);
+        border-radius: 20px;
+        transition: 0.3s;
+    }
+    .glass-card:hover {
+        transform: translateY(-10px);
+        background: rgba(45, 106, 79, 0.1);
+        border-color: #95d5b2;
+    }
+</style>
+{% endblock %}

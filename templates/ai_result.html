@@ -1,0 +1,61 @@
+{% extends 'base.html' %}
+{% block title %}AI Project Ideas — Projectree{% endblock %}
+
+{% block head %}
+<link href="https://fonts.googleapis.com/css2?family=DM+Serif+Display:ital@0;1&family=DM+Sans:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+.ai-result-wrapper { max-width:800px; margin:3rem auto; padding:0 1rem; }
+.ai-result-card {
+  background: rgba(10,25,15,0.7);
+  border: 1px solid rgba(45,106,79,0.4);
+  border-radius: 20px;
+  padding: 2rem;
+}
+.ai-result-title { font-size:1.6rem; font-weight:700; color:#95d5b2; margin-bottom:1.5rem; font-family:'DM Serif Display',serif; }
+.idea-block {
+  background: rgba(45,106,79,0.08);
+  border: 1px solid rgba(45,106,79,0.25);
+  border-radius: 14px;
+  padding: 1.25rem 1.5rem;
+  margin-bottom: 1rem;
+  color: #e8f5ee;
+  white-space: pre-wrap;
+  font-family: 'DM Sans', sans-serif;
+  font-size: 0.92rem;
+  line-height: 1.7;
+}
+.ai-error {
+  color: #f4a261;
+  background: rgba(244,162,97,0.1);
+  border: 1px solid rgba(244,162,97,0.3);
+  border-radius: 14px;
+  padding: 1.25rem 1.5rem;
+  white-space: pre-wrap;
+  font-size: 0.92rem;
+}
+.btn-generate-more {
+  display:inline-block; margin-top:1.5rem;
+  background: linear-gradient(135deg,#2d6a4f,#40916c);
+  color:#d8f3dc; border:none; border-radius:50px;
+  padding:10px 28px; font-weight:600; font-size:0.95rem;
+  text-decoration:none; transition:opacity 0.2s;
+}
+.btn-generate-more:hover { opacity:0.85; color:#d8f3dc; }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="ai-result-wrapper">
+  <div class="ai-result-card">
+    <div class="ai-result-title">🤖 Generated Project Ideas</div>
+
+    {% if ideas and '⚠' in ideas %}
+      <div class="ai-error">{{ ideas }}</div>
+    {% else %}
+      <div class="idea-block" style="white-space:pre-wrap;">{{ ideas }}</div>
+    {% endif %}
+
+    <a href="/ai_form" class="btn-generate-more">🔁 Generate More Ideas</a>
+  </div>
+</div>
+{% endblock %}

@@ -1,0 +1,115 @@
+{% extends 'base.html' %}
+{% block title %}Your Matches — Projectree{% endblock %}
+
+{% block content %}
+<div class="container py-5">
+
+    <!-- Header -->
+    <div class="text-center mb-5 animate__animated animate__fadeIn">
+        <h1 class="display-5 fw-bold text-white">🚀 Your Recommended Projects</h1>
+        {% if query %}
+        <p class="text-white-50 small mt-2">
+            Matched for:
+            {% if query.interest %}<span class="badge bg-success bg-opacity-10 text-success border border-success mx-1">{{ query.interest }}</span>{% endif %}
+            {% if query.type %}<span class="badge bg-success bg-opacity-10 text-success border border-success mx-1">{{ query.type }}</span>{% endif %}
+            {% if query.level %}<span class="badge bg-success bg-opacity-10 text-success border border-success mx-1">{{ query.level }}</span>{% endif %}
+            {% if query.language %}<span class="badge bg-success bg-opacity-10 text-success border border-success mx-1">{{ query.language }}</span>{% endif %}
+        </p>
+        {% endif %}
+        {% if error %}
+        <div class="alert alert-warning mt-3 d-inline-block">⚠ {{ error }}</div>
+        {% endif %}
+    </div>
+
+    {% if projects %}
+    <div class="row g-4 mb-5">
+        {% for p in projects %}
+        <div class="col-lg-6 animate__animated animate__fadeInUp" style="animation-delay:{{ loop.index0 * 0.05 }}s;">
+            <div class="glass-card p-4 h-100 d-flex flex-column" style="background: rgba(45, 106, 79, 0.03); border: 1px solid rgba(149, 213, 178, 0.1);">
+                <!-- Score bar -->
+                <div class="d-flex justify-content-between align-items-center mb-3">
+                    <span class="badge bg-success bg-opacity-10 text-success border border-success px-3">
+                        {{ p.language }}
+                    </span>
+                    <span class="text-success fw-bold small">
+                        {{ p.score }}% match
+                    </span>
+                </div>
+                <div class="progress mb-3" style="height:4px; background:rgba(255,255,255,0.05);">
+                    <div class="progress-bar bg-success" style="width:{{ [p.score, 100]|min }}%;"></div>
+                </div>
+
+                <h4 class="text-white fw-bold mb-2">{{ p.title }}</h4>
+                <p class="text-white-50 small flex-grow-1">
+                    {{ (p.description or '')[:160] }}{% if (p.description or '')|length > 160 %}…{% endif %}
+                </p>
+
+                <div class="d-flex gap-2 mt-3 flex-wrap">
+                    <a href="/project/{{ p.id }}" class="btn btn-success btn-sm rounded-pill px-4 fw-bold">
+                        View Details →
+                    </a>
+                    <a href="/explain/{{ p.id }}" class="btn btn-outline-success btn-sm rounded-pill px-3">
+                        🤖 AI Explain
+                    </a>
+                    <a href="/start/{{ p.id }}" class="btn btn-outline-secondary btn-sm rounded-pill px-3">
+                        + Start
+                    </a>
+                </div>
+            </div>
+        </div>
+        {% endfor %}
+    </div>
+    {% else %}
+    <div class="text-center py-5">
+        <p class="text-white-50 mb-4">No projects matched your criteria. Try broader options.</p>
+        <a href="/quiz" class="btn btn-success rounded-pill px-5">Try Again</a>
+    </div>
+    {% endif %}
+
+    <!-- GitHub Live Projects -->
+    {% if github_projects %}
+    <hr class="border-secondary my-5">
+    <div class="animate__animated animate__fadeIn">
+        <h3 class="text-white fw-bold mb-1">🌐 Trending on GitHub</h3>
+        <p class="text-white-50 small mb-4">Real open-source projects related to your interest</p>
+        <div class="row g-3">
+            {% for g in github_projects %}
+            <div class="col-md-6 col-lg-4">
+                <a href="{{ g.url }}" target="_blank" rel="noopener" class="text-decoration-none">
+                    <div class="glass-card p-3 h-100" style="transition:0.25s;">
+                        <div class="d-flex justify-content-between align-items-center mb-2">
+                            <span class="badge bg-dark border border-secondary text-white-50 small">{{ g.language }}</span>
+                            <span class="text-warning small">⭐ {{ "{:,}".format(g.stars) }}</span>
+                        </div>
+                        <h6 class="text-white fw-bold mb-1">{{ g.title }}</h6>
+                        <p class="text-white-50 small mb-0" style="font-size:0.8rem;">
+                            {{ (g.desc or '')[:100] }}{% if (g.desc or '')|length > 100 %}…{% endif %}
+                        </p>
+                    </div>
+                </a>
+            </div>
+            {% endfor %}
+        </div>
+    </div>
+    {% endif %}
+
+
+    <!-- AI Chat Nudge -->
+    <div class="glass-card p-4 text-center mt-4" style="border:1px solid rgba(45,106,79,0.35);background:rgba(45,106,79,0.08);">
+        <div class="d-flex align-items-center justify-content-center gap-2 mb-2">
+            <span style="width:8px;height:8px;background:#22c55e;border-radius:50%;animation:pulse-dot 2s infinite;display:inline-block;"></span>
+            <span class="text-success fw-bold small">AI Assistant Online</span>
+        </div>
+        <p class="text-white-50 small mb-3">
+            Not sure which project to pick? Ask our AI — it can explain any project, suggest alternatives, or help you plan your learning roadmap.
+        </p>
+        <a href="/chat" class="btn btn-success rounded-pill px-4">💬 Ask AI to Help Choose</a>
+    </div>
+
+    <!-- Retry Button -->
+    <div class="text-center mt-5">
+        <a href="/quiz" class="btn btn-outline-success rounded-pill px-5">← Retake Quiz</a>
+    </div>
+
+</div>
+{% endblock %}

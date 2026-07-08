@@ -1,0 +1,99 @@
+{% extends 'base.html' %}
+{% block content %}
+<div class="container py-5 d-flex align-items-center justify-content-center" style="min-height: 85vh;">
+    <div class="glass-card p-5 w-100 shadow-lg border-0" style="max-width: 700px; border-radius: 30px;">
+        
+        <!-- Progress Indicator -->
+        <div class="d-flex justify-content-between align-items-center mb-5">
+            <span id="quiz-step-text" class="small fw-bold text-success text-uppercase" style="letter-spacing: 2px;">Step 1 of 4</span>
+            <div class="progress w-50" style="height: 6px; background: rgba(255,255,255,0.1);">
+                <div id="quiz-progress-bar" class="progress-bar bg-success" style="width: 25%"></div>
+            </div>
+        </div>
+
+        <form id="discovery-form" action="/recommend" method="POST">
+            <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+            
+            <!-- STEP 1: INTERESTS (8 Options) -->
+            <div class="quiz-step animate__animated animate__fadeIn" id="step-1">
+                <h2 class="fw-bold text-white mb-4">Choose your field of interest.</h2>
+                <div class="row g-3">
+                    {% for item in ['Web', 'AI', 'IoT', 'Security', 'Data', 'Mobile', 'Blockchain', 'Cloud'] %}
+                    <div class="col-6">
+                        <button type="button" class="btn btn-outline-success w-100 p-3 quiz-btn" onclick="nextStep('interest', '{{ item }}')">{{ item }}</button>
+                    </div>
+                    {% endfor %}
+                </div>
+            </div>
+
+            <!-- STEP 2: TYPE (2 Options) -->
+            <div class="quiz-step d-none animate__animated animate__fadeIn" id="step-2">
+                <h2 class="fw-bold text-white mb-4">Select your ecosystem type.</h2>
+                <div class="row g-3">
+                    <div class="col-12">
+                        <button type="button" class="btn btn-outline-success w-100 p-4 quiz-btn" onclick="nextStep('type', 'Software')">Pure Software Engineering</button>
+                    </div>
+                    <div class="col-12">
+                        <button type="button" class="btn btn-outline-success w-100 p-4 quiz-btn" onclick="nextStep('type', 'Hardware')">Hardware & Embedded Systems</button>
+                    </div>
+                </div>
+            </div>
+
+            <!-- STEP 3: LEVEL (3 Options) -->
+            <div class="quiz-step d-none animate__animated animate__fadeIn" id="step-3">
+                <h2 class="fw-bold text-white mb-4">What is your current level?</h2>
+                <div class="row g-3">
+                    {% for item in ['Beginner', 'Intermediate', 'Advanced'] %}
+                    <div class="col-12">
+                        <button type="button" class="btn btn-outline-success w-100 p-3 quiz-btn" onclick="nextStep('level', '{{ item }}')">{{ item }} Level</button>
+                    </div>
+                    {% endfor %}
+                </div>
+            </div>
+
+            <!-- STEP 4: LANGUAGES (7 Options) -->
+            <div class="quiz-step d-none animate__animated animate__fadeIn" id="step-4">
+                <h2 class="fw-bold text-white mb-4">Primary programming language?</h2>
+                <div class="row g-3">
+                    {% for item in ['Python', 'JavaScript', 'C++', 'Java', 'Rust', 'Go', 'Swift'] %}
+                    <div class="col-6">
+                        <button type="button" class="btn btn-outline-success w-100 p-3 quiz-btn" onclick="nextStep('language', '{{ item }}')">{{ item }}</button>
+                    </div>
+                    {% endfor %}
+                </div>
+            </div>
+
+            <!-- Hidden Fields to Store Choice -->
+            <input type="hidden" name="interest" id="input-interest">
+            <input type="hidden" name="type" id="input-type">
+            <input type="hidden" name="level" id="input-level">
+            <input type="hidden" name="language" id="input-language">
+        </form>
+    </div>
+</div>
+
+<style>
+    .quiz-btn { border-radius: 15px; font-weight: 600; border: 1px solid rgba(45, 106, 79, 0.5); background: rgba(255,255,255,0.02); transition: 0.3s; color: #95d5b2; }
+    .quiz-btn:hover { background: #2d6a4f; color: white; transform: translateY(-3px); box-shadow: 0 5px 15px rgba(45, 106, 79, 0.4); }
+</style>
+
+<script>
+    let current = 1;
+    function nextStep(field, value) {
+        document.getElementById('input-' + field).value = value;
+        
+        if (current < 4) {
+            document.getElementById('step-' + current).classList.add('d-none');
+            current++;
+            document.getElementById('step-' + current).classList.remove('d-none');
+            
+            // Update Progress Bar & Text
+            document.getElementById('quiz-step-text').innerText = `Step ${current} of 4`;
+            document.getElementById('quiz-progress-bar').style.width = (current * 25) + '%';
+        } else {
+            // Final Step - Submit the form
+            document.getElementById('discovery-form').submit();
+        }
+    }
+</script>
+{% endblock %}

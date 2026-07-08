@@ -1,0 +1,195 @@
+{% extends 'base.html' %}
+{% block title %}Admin Panel — Projectree{% endblock %}
+
+{% block head %}
+<style>
+.admin-header { background: linear-gradient(135deg, rgba(45,106,79,0.2), rgba(64,145,108,0.1)); border-bottom: 1px solid rgba(45,106,79,0.3); padding: 2rem 0 1.5rem; margin-bottom: 2rem; }
+.admin-card { background: rgba(4,13,10,0.85); border: 1px solid rgba(45,106,79,0.25); border-radius: 16px; }
+.admin-stat { background: rgba(45,106,79,0.1); border: 1px solid rgba(45,106,79,0.2); border-radius: 12px; padding: 1.25rem; text-align:center; }
+.table-dark th { background: rgba(45,106,79,0.2); color: #95d5b2; font-size: 0.8rem; letter-spacing: 1px; text-transform: uppercase; }
+.table-dark td { vertical-align: middle; color: rgba(255,255,255,0.8); border-color: rgba(255,255,255,0.05); }
+.badge-admin { background: linear-gradient(135deg,#2d6a4f,#40916c); }
+.form-label { color: rgba(255,255,255,0.6); font-size: 0.8rem; letter-spacing: 1px; text-transform: uppercase; font-weight: 600; }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="admin-header">
+  <div class="container">
+    <div class="d-flex align-items-center justify-content-between flex-wrap gap-3">
+      <div>
+        <p class="text-success small fw-bold mb-1" style="letter-spacing:3px;">ADMIN PORTAL</p>
+        <h1 class="fw-bold text-white mb-1">🛠️ Projectree Admin</h1>
+        <p class="text-white-50 mb-0">Manage all projects and users from here</p>
+      </div>
+      <a href="/" class="btn btn-outline-success rounded-pill px-4">← Back to Site</a>
+    </div>
+  </div>
+</div>
+
+<div class="container pb-5">
+
+  <!-- Stats Row -->
+  <div class="row g-3 mb-4">
+    <div class="col-6 col-md-3">
+      <div class="admin-stat">
+        <div class="fs-2 fw-bold text-success">{{ projects|length }}</div>
+        <div class="text-white-50 small">Total Projects</div>
+      </div>
+    </div>
+    <div class="col-6 col-md-3">
+      <div class="admin-stat">
+        <div class="fs-2 fw-bold text-info">{{ users|length }}</div>
+        <div class="text-white-50 small">Registered Users</div>
+      </div>
+    </div>
+    <div class="col-6 col-md-3">
+      <div class="admin-stat">
+        <div class="fs-2 fw-bold text-warning">{{ users|selectattr('is_admin')|list|length }}</div>
+        <div class="text-white-50 small">Admins</div>
+      </div>
+    </div>
+    <div class="col-6 col-md-3">
+      <div class="admin-stat">
+        <div class="fs-2 fw-bold text-danger">{{ projects|selectattr('cached_guide')|list|length }}</div>
+        <div class="text-white-50 small">Cached Guides</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Add New Project -->
+  <div class="admin-card p-4 mb-4">
+    <h5 class="text-white fw-bold mb-3">➕ Add New Project</h5>
+    <form method="POST" action="/admin/project/add">
+      <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+      <div class="row g-3">
+        <div class="col-md-6">
+          <label class="form-label">Title</label>
+          <input type="text" name="title" class="form-control bg-dark text-white border-secondary" required placeholder="Weather Station with IoT">
+        </div>
+        <div class="col-md-6">
+          <label class="form-label">Language</label>
+          <input type="text" name="language" class="form-control bg-dark text-white border-secondary" placeholder="Python, C++, JavaScript">
+        </div>
+        <div class="col-md-4">
+          <label class="form-label">Domain / Interest</label>
+          <select name="interest" class="form-select bg-dark text-white border-secondary">
+            <option>IoT</option><option>Web</option><option>AI</option>
+            <option>Security</option><option>Data</option><option>Blockchain</option>
+          </select>
+        </div>
+        <div class="col-md-4">
+          <label class="form-label">Type</label>
+          <select name="type" class="form-select bg-dark text-white border-secondary">
+            <option>Hardware</option><option>Software</option><option>Full-Stack</option><option>ML Model</option>
+          </select>
+        </div>
+        <div class="col-md-4">
+          <label class="form-label">Level</label>
+          <select name="level" class="form-select bg-dark text-white border-secondary">
+            <option>Beginner</option><option>Intermediate</option><option>Advanced</option>
+          </select>
+        </div>
+        <div class="col-md-2">
+          <label class="form-label">Duration (Days)</label>
+          <input type="number" name="duration_days" class="form-control bg-dark text-white border-secondary" value="7">
+        </div>
+        <div class="col-md-10">
+          <label class="form-label">Description</label>
+          <textarea name="description" class="form-control bg-dark text-white border-secondary" rows="2" placeholder="Brief project description..."></textarea>
+        </div>
+        <div class="col-12">
+          <label class="form-label">Steps (format: Title [:]Description|Title [:]Description)</label>
+          <textarea name="steps" class="form-control bg-dark text-white border-secondary" rows="3" placeholder="Setup Environment [:]Install Python and IDE|Build Backend [:]Create Flask app"></textarea>
+        </div>
+        <div class="col-12">
+          <button type="submit" class="btn btn-success px-5 rounded-pill fw-bold">🌱 Add Project</button>
+        </div>
+      </div>
+    </form>
+  </div>
+
+  <!-- Projects Table -->
+  <div class="admin-card p-4 mb-4">
+    <h5 class="text-white fw-bold mb-3">📁 All Projects ({{ projects|length }})</h5>
+    <div class="table-responsive">
+      <table class="table table-dark table-hover align-middle mb-0">
+        <thead>
+          <tr>
+            <th>ID</th><th>Title</th><th>Domain</th><th>Level</th><th>Language</th><th>Guide Cached</th><th>Actions</th>
+          </tr>
+        </thead>
+        <tbody>
+          {% for p in projects %}
+          <tr>
+            <td class="text-white-50">#{{ p.id }}</td>
+            <td class="fw-semibold text-white">{{ p.title[:50] }}{% if p.title|length > 50 %}…{% endif %}</td>
+            <td><span class="badge bg-success bg-opacity-20 text-success">{{ p.interest }}</span></td>
+            <td><span class="badge bg-info bg-opacity-20 text-info">{{ p.level }}</span></td>
+            <td class="text-white-50">{{ p.language }}</td>
+            <td>
+              {% if p.cached_guide %}
+                <span class="badge bg-success">✓ Cached</span>
+              {% else %}
+                <span class="badge bg-secondary">Not yet</span>
+              {% endif %}
+            </td>
+            <td>
+              <a href="/project/{{ p.id }}" class="btn btn-sm btn-outline-info me-1">View</a>
+              <a href="/guide/{{ p.id }}" class="btn btn-sm btn-outline-success me-1">Guide</a>
+              <form method="POST" action="/admin/project/delete/{{ p.id }}" class="d-inline"
+                    onsubmit="return confirm('Delete {{ p.title }}?')">
+                <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+                <button type="submit" class="btn btn-sm btn-outline-danger">Delete</button>
+              </form>
+            </td>
+          </tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    </div>
+  </div>
+
+  <!-- Users Table -->
+  <div class="admin-card p-4">
+    <h5 class="text-white fw-bold mb-3">👤 Registered Users ({{ users|length }})</h5>
+    <div class="table-responsive">
+      <table class="table table-dark table-hover align-middle mb-0">
+        <thead>
+          <tr><th>ID</th><th>Username</th><th>Email</th><th>Admin</th><th>Joined</th><th>Actions</th></tr>
+        </thead>
+        <tbody>
+          {% for u in users %}
+          <tr>
+            <td class="text-white-50">#{{ u.id }}</td>
+            <td class="fw-semibold text-white">{{ u.username }}</td>
+            <td class="text-white-50">{{ u.email }}</td>
+            <td>
+              {% if u.is_admin %}
+                <span class="badge badge-admin">👑 Admin</span>
+              {% else %}
+                <span class="badge bg-secondary">User</span>
+              {% endif %}
+            </td>
+            <td class="text-white-50 small">{{ u.created_at.strftime('%d %b %Y') if u.created_at else 'N/A' }}</td>
+            <td>
+              {% if u.id != current_user.id %}
+              <form method="POST" action="/admin/user/toggle_admin/{{ u.id }}" class="d-inline">
+                <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+                <button type="submit" class="btn btn-sm btn-outline-warning">
+                  {{ 'Remove Admin' if u.is_admin else 'Make Admin' }}
+                </button>
+              </form>
+              {% else %}
+                <span class="text-white-50 small">You</span>
+              {% endif %}
+            </td>
+          </tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    </div>
+  </div>
+
+</div>
+{% endblock %}

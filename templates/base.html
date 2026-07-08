@@ -1,0 +1,130 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>{% block title %}Projectree — AI Project Discovery{% endblock %}</title>
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;800&display=swap" rel="stylesheet">
+  <link href="https://cdnjs.cloudflare.com/ajax/libs/animate.css/4.1.1/animate.min.css" rel="stylesheet">
+  <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+  {% block head %}{% endblock %}
+</head>
+<body>
+
+<nav class="navbar navbar-expand-lg sticky-top">
+  <div class="container">
+    <a class="navbar-brand fw-bold text-success fs-3" href="/">🌳 PROJECTREE</a>
+
+    <button class="navbar-toggler border-secondary" type="button" data-bs-toggle="collapse" data-bs-target="#navMenu">
+      <span class="navbar-toggler-icon"></span>
+    </button>
+
+    <div class="collapse navbar-collapse" id="navMenu">
+      <div class="navbar-nav ms-auto gap-1 align-items-center flex-wrap">
+        <a class="nav-link" href="/">Home</a>
+        <a class="nav-link" href="/services">Services</a>
+        <a class="nav-link" href="/quiz">Quiz</a>
+        <a class="nav-link" href="/dashboard">Greenhouse</a>
+        <a class="nav-link" href="/forest">🌳 Forest</a>
+        <a class="nav-link ai-nav-link" href="/chat"><span class="ai-nav-dot"></span> AI Chat</a>
+        {% if g_lvl %}
+        <span class="nav-xp-pill" title="{{ g_lvl.xp }} XP">
+          ⚡ Lv.{{ g_lvl.level }} · {{ g_lvl.xp }}xp
+        </span>
+        {% endif %}
+        <form action="/search" method="get" class="d-flex ms-2">
+          <input name="q" class="form-control form-control-sm bg-dark text-white border-secondary"
+                 placeholder="Search…" style="width:140px;" value="{{ request.args.get('q','') }}">
+          <button class="btn btn-sm btn-outline-success ms-1">🔍</button>
+        </form>
+        <!-- Auth Buttons -->
+        {% if current_user.is_authenticated %}
+          {% if current_user.is_admin %}
+          <a class="btn btn-sm btn-outline-warning rounded-pill ms-1" href="/admin">🛠️ Admin</a>
+          {% endif %}
+          <div class="dropdown ms-1">
+            <button class="btn btn-sm btn-success rounded-pill dropdown-toggle" data-bs-toggle="dropdown">
+              🌱 {{ current_user.username }}
+            </button>
+            <ul class="dropdown-menu dropdown-menu-end bg-dark border-secondary">
+              <li><a class="dropdown-item text-white-50" href="/dashboard">📊 My Dashboard</a></li>
+              <li><a class="dropdown-item text-white-50" href="/forest">🌳 My Forest</a></li>
+              <li><hr class="dropdown-divider border-secondary"></li>
+              <li><a class="dropdown-item text-danger" href="/logout">🚪 Logout</a></li>
+            </ul>
+          </div>
+        {% else %}
+          <a class="btn btn-sm btn-outline-success rounded-pill ms-1" href="/login">Login</a>
+          <a class="btn btn-sm btn-success rounded-pill ms-1" href="/register">Register</a>
+        {% endif %}
+      </div>
+    </div>
+  </div>
+</nav>
+
+{% with messages = get_flashed_messages(with_categories=true) %}
+  {% if messages %}
+    <div class="container mt-3">
+      {% for cat, msg in messages %}
+        <div class="alert alert-{{ 'success' if cat=='success' else 'warning' }} alert-dismissible fade show" role="alert">
+          {{ msg }}<button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+        </div>
+      {% endfor %}
+    </div>
+  {% endif %}
+{% endwith %}
+
+{% block content %}{% endblock %}
+
+<footer class="mt-5">
+  <div class="container text-center">
+    <h4 class="text-success mb-2">🌱 Projectree</h4>
+    <p class="opacity-50 small mb-3">AI-powered project discovery for students and developers</p>
+    <div class="mb-3">
+      <a href="/quiz"      class="text-white-50 text-decoration-none mx-3 small">Discovery Quiz</a>
+      <a href="/services"  class="text-white-50 text-decoration-none mx-3 small">Services</a>
+      <a href="/dashboard" class="text-white-50 text-decoration-none mx-3 small">Greenhouse</a>
+      <a href="/forest"    class="text-white-50 text-decoration-none mx-3 small">Forest</a>
+    </div>
+    <p class="opacity-25 small">© 2025 Projectree · support@projectree.io</p>
+  </div>
+</footer>
+
+{% if request.path != '/chat' %}
+<a href="/chat" id="floatAI" title="Ask AI">
+  <span class="float-dot"></span>
+  <span style="font-size:22px;">🤖</span>
+  <span class="float-label">Ask AI</span>
+</a>
+{% endif %}
+
+<style>
+.nav-xp-pill {
+  background:rgba(45,106,79,0.2); border:1px solid rgba(45,106,79,0.4);
+  border-radius:50px; padding:3px 12px; font-size:.72rem; color:#95d5b2;
+  font-weight:600; white-space:nowrap;
+}
+#floatAI {
+  position:fixed; bottom:28px; left:28px;
+  background:linear-gradient(135deg,#2d6a4f,#40916c); border-radius:50px;
+  padding:12px 18px 12px 14px; display:flex; align-items:center; gap:8px;
+  color:white; text-decoration:none; box-shadow:0 8px 28px rgba(45,106,79,0.5);
+  z-index:1000; transition:all 0.3s; font-weight:600; font-size:13px;
+}
+#floatAI:hover { background:linear-gradient(135deg,#40916c,#95d5b2); color:#040d0a;
+                  transform:translateY(-3px); box-shadow:0 12px 35px rgba(45,106,79,0.6); }
+.float-dot { width:8px; height:8px; background:#d8f3dc; border-radius:50%; animation:pulse-dot 2s infinite; }
+.ai-nav-dot { display:inline-block; width:7px; height:7px; background:#22c55e; border-radius:50%;
+               margin-right:4px; animation:pulse-dot 2s infinite; vertical-align:middle; }
+.ai-nav-link { color:#95d5b2 !important; font-weight:600 !important; }
+@keyframes pulse-dot {
+  0%,100% { opacity:1; box-shadow:0 0 0 0 rgba(34,197,94,0.5); }
+  50%      { opacity:.8; box-shadow:0 0 0 5px rgba(34,197,94,0); }
+}
+</style>
+
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+{% block scripts %}{% endblock %}
+</body>
+</html>

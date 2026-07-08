@@ -1,0 +1,176 @@
+{% extends 'base.html' %}
+{% block title %}My Forest — Projectree{% endblock %}
+
+{% block head %}
+<link href="https://fonts.googleapis.com/css2?family=DM+Serif+Display:ital@0;1&family=DM+Sans:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+.forest-hero { padding:3rem 0 2rem; text-align:center; }
+.forest-canvas-bg { background:linear-gradient(180deg,rgba(2,8,5,0.9) 0%,rgba(10,30,15,0.8) 100%);
+                     border-radius:20px; overflow:hidden; position:relative; padding:20px; }
+.forest-grid { display:grid; grid-template-columns: repeat(auto-fill, minmax(130px,1fr)); gap:16px; margin-top:24px; }
+.tree-tile   { text-align:center; cursor:default; transition:transform 0.2s; }
+.tree-tile:hover { transform:translateY(-4px); }
+.tree-tile canvas { display:block; margin:0 auto; }
+.tree-tile-title { font-size:.72rem; color:rgba(255,255,255,0.6); margin-top:6px; line-height:1.3; }
+.stat-card   { background:rgba(10,25,15,0.6); border:1px solid rgba(45,106,79,0.3); border-radius:16px; padding:20px; text-align:center; }
+.badge-grid  { display:flex; flex-wrap:wrap; gap:10px; }
+.big-badge   { background:rgba(45,106,79,0.1); border:1px solid rgba(45,106,79,0.3); border-radius:14px;
+                padding:12px 16px; display:flex; align-items:center; gap:10px; }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="container py-4 mt-1">
+  <div class="forest-hero">
+    <p class="text-success small fw-bold mb-1" style="letter-spacing:3px;">YOUR ACHIEVEMENT</p>
+    <h1 class="display-4 fw-bold text-white mb-2" style="font-family:'DM Serif Display',serif;">
+      The Mastered <em style="color:#95d5b2;">Forest</em> 🌳
+    </h1>
+    <p class="text-white-50 mx-auto" style="max-width:480px;">
+      Every tree here represents a project you've fully completed and mastered.
+    </p>
+    <a href="/dashboard" class="btn btn-outline-success rounded-pill px-4 mt-2">← Back to Greenhouse</a>
+  </div>
+
+  <!-- Stats Row -->
+  <div class="row g-3 mb-4">
+    <div class="col-6 col-md-3">
+      <div class="stat-card">
+        <div class="fs-1 fw-bold text-success">{{ done|length }}</div>
+        <small class="text-white-50 text-uppercase" style="letter-spacing:1px;font-size:.7rem;">Trees Grown</small>
+      </div>
+    </div>
+    <div class="col-6 col-md-3">
+      <div class="stat-card">
+        <div class="fs-1 fw-bold text-warning">{{ lvl_info.xp }}</div>
+        <small class="text-white-50 text-uppercase" style="letter-spacing:1px;font-size:.7rem;">XP Total</small>
+      </div>
+    </div>
+    <div class="col-6 col-md-3">
+      <div class="stat-card">
+        <div class="fs-1 fw-bold" style="color:#95d5b2;">{{ lvl_info.level }}</div>
+        <small class="text-white-50 text-uppercase" style="letter-spacing:1px;font-size:.7rem;">Level</small>
+      </div>
+    </div>
+    <div class="col-6 col-md-3">
+      <div class="stat-card">
+        <div class="fs-1 fw-bold text-white">{{ stats.streak_days }}</div>
+        <small class="text-white-50 text-uppercase" style="letter-spacing:1px;font-size:.7rem;">Day Streak</small>
+      </div>
+    </div>
+  </div>
+
+  <!-- Forest Canvas -->
+  <div class="forest-canvas-bg mb-4">
+    {% if not done %}
+    <div class="text-center py-5">
+      <div style="font-size:4rem;">🌱</div>
+      <p class="text-white-50 mt-3">No trees yet. Complete your first project to start growing your forest!</p>
+      <a href="/quiz" class="btn btn-success rounded-pill px-5 mt-2">Find a Project →</a>
+    </div>
+    {% else %}
+    <div class="forest-grid" id="forestGrid">
+      {% for p in done %}
+      <div class="tree-tile">
+        <canvas id="ftree-{{ p.id }}" width="100" height="120"></canvas>
+        <div class="tree-tile-title">{{ p.title[:30] }}{% if p.title|length > 30 %}…{% endif %}</div>
+        <div style="font-size:.65rem;color:#2d6a4f;margin-top:2px;">{{ p.language }}</div>
+      </div>
+      {% endfor %}
+    </div>
+    {% endif %}
+  </div>
+
+  <!-- Achievements -->
+  {% if badges %}
+  <div class="glass-card p-4 mb-4">
+    <h5 class="text-white fw-bold mb-3">🏅 Achievements</h5>
+    <div class="badge-grid">
+      {% for b in badges %}
+      <div class="big-badge">
+        <span style="font-size:1.5rem;">{{ b.emoji }}</span>
+        <div>
+          <div class="text-white fw-bold small">{{ b.title }}</div>
+          <div class="text-white-50" style="font-size:.72rem;">{{ b.description }}</div>
+        </div>
+      </div>
+      {% endfor %}
+    </div>
+  </div>
+  {% endif %}
+
+  <!-- Keep growing CTA -->
+  <div class="glass-card p-4 text-center" style="border:1px solid rgba(45,106,79,0.3);">
+    <div style="font-size:2rem;" class="mb-2">🌱</div>
+    <h5 class="text-white fw-bold">Keep Growing</h5>
+    <p class="text-white-50 small mb-3">Start a new project to add another tree to your forest.</p>
+    <a href="/quiz" class="btn btn-success rounded-pill px-5">Plant a New Seed →</a>
+  </div>
+</div>
+
+<script>
+function drawForestTree(canvas, pct, idx) {
+  const ctx = canvas.getContext("2d");
+  const W   = canvas.width, H = canvas.height;
+  ctx.clearRect(0,0,W,H);
+  const groundY = H - 12;
+
+  // Sway animation per tree - increased for visibility
+  const offset = Math.sin(Date.now()/1400 + idx*1.1) * 3.5;
+
+  // Ground
+  const grd = ctx.createLinearGradient(0,groundY,0,H);
+  grd.addColorStop(0,"rgba(45,106,79,0.5)"); grd.addColorStop(1,"rgba(20,50,30,0.3)");
+  ctx.fillStyle = grd;
+  ctx.beginPath(); ctx.ellipse(W/2,groundY,22,8,0,0,Math.PI*2); ctx.fill();
+
+  // Trunk
+  const tH = 50, tW = 5, tX = W/2;
+  const tTop = groundY - tH;
+  const tGrad = ctx.createLinearGradient(tX-tW,0,tX+tW,0);
+  tGrad.addColorStop(0,"#1a3320"); tGrad.addColorStop(0.5,"#2d5a38"); tGrad.addColorStop(1,"#1a3320");
+  ctx.fillStyle = tGrad;
+  ctx.beginPath();
+  ctx.moveTo(tX-tW+offset, groundY); ctx.lineTo(tX-tW*0.5+offset, tTop);
+  ctx.lineTo(tX+tW*0.5+offset, tTop); ctx.lineTo(tX+tW+offset, groundY);
+  ctx.fill();
+
+  function branch(x,y,angle,len,depth) {
+    if(depth<=0||len<3) return;
+    const ex=x+Math.cos(angle)*len, ey=y+Math.sin(angle)*len;
+    ctx.strokeStyle=depth>1?"#2d5a38":"#3a7d52"; ctx.lineWidth=Math.max(0.5,depth*1.2);
+    ctx.beginPath(); ctx.moveTo(x,y); ctx.lineTo(ex,ey); ctx.stroke();
+    branch(ex,ey,angle-0.45,len*0.7,depth-1);
+    branch(ex,ey,angle+0.45,len*0.7,depth-1);
+    if(depth<=2) {
+      ["rgba(45,106,79,0.75)","rgba(64,145,108,0.6)","rgba(149,213,178,0.5)"].forEach((c,i)=>{
+        ctx.fillStyle=c; ctx.beginPath();
+        ctx.ellipse(ex+(i-1)*7,ey-5, 10+i*2, 8+i*2, 0,0,Math.PI*2); ctx.fill();
+      });
+    }
+  }
+  branch(tX+offset, tTop, -Math.PI/2-0.5, 22, 3);
+  branch(tX+offset, tTop, -Math.PI/2+0.5, 22, 3);
+  const mid = tTop + tH*0.45;
+  branch(tX+offset, mid, -Math.PI/2-0.65, 16, 2);
+  branch(tX+offset, mid, -Math.PI/2+0.65, 16, 2);
+
+  // Fruits
+  [[tX-15,tTop+5],[tX+12,tTop+12],[tX-3,tTop-2]].forEach(([fx,fy])=>{
+    ctx.fillStyle="#d62828"; ctx.beginPath(); ctx.arc(fx+offset,fy,3.5,0,Math.PI*2); ctx.fill();
+  });
+}
+
+document.addEventListener("DOMContentLoaded", () => {
+  const trees = document.querySelectorAll("[id^='ftree-']");
+  trees.forEach((c, i) => drawForestTree(c, 100, i));
+
+  // Gentle sway animation
+  function animate() {
+    trees.forEach((c, i) => drawForestTree(c, 100, i));
+    requestAnimationFrame(animate);
+  }
+  animate();
+});
+</script>
+{% endblock %}

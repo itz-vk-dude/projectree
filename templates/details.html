@@ -1,0 +1,96 @@
+{% extends 'base.html' %}
+{% block title %}{{ project.title }} — Projectree{% endblock %}
+
+{% block content %}
+<div class="container py-5 mt-2">
+    <div class="row justify-content-center">
+        <div class="col-lg-10">
+            <div class="glass-card p-4 p-md-5 animate__animated animate__fadeIn" style="background: rgba(4, 13, 10, 0.4); border: 1px solid rgba(149, 213, 178, 0.15);">
+
+                <!-- Breadcrumb -->
+                <nav class="mb-4" aria-label="breadcrumb">
+                    <ol class="breadcrumb mb-0" style="background:none; padding:0;">
+                        <li class="breadcrumb-item"><a href="/" class="text-success text-decoration-none">Home</a></li>
+                        <li class="breadcrumb-item"><a href="/category/{{ project.interest }}" class="text-success text-decoration-none">{{ project.interest }}</a></li>
+                        <li class="breadcrumb-item active text-white-50" aria-current="page">{{ project.title[:40] }}{% if project.title|length > 40 %}…{% endif %}</li>
+                    </ol>
+                </nav>
+
+                <!-- Title & Language Badge -->
+                <div class="d-flex justify-content-between align-items-start mb-4 flex-wrap gap-2">
+                    <h1 class="display-6 fw-bold text-white mb-0">{{ project.title }}</h1>
+                    <span class="badge bg-success rounded-pill px-3 py-2 fs-6">{{ project.language }}</span>
+                </div>
+
+                <!-- Quick Stats -->
+                <div class="row text-center mb-5 py-3 border-top border-bottom border-secondary border-opacity-25">
+                    <div class="col-4 border-end border-secondary border-opacity-25">
+                        <small class="text-success d-block text-uppercase fw-bold" style="font-size:0.7rem;letter-spacing:1px;">Timeline</small>
+                        <span class="text-white fw-bold">{{ project.duration_days or '?' }} Days</span>
+                    </div>
+                    <div class="col-4 border-end border-secondary border-opacity-25">
+                        <small class="text-success d-block text-uppercase fw-bold" style="font-size:0.7rem;letter-spacing:1px;">Level</small>
+                        <span class="text-white fw-bold">{{ project.level or 'N/A' }}</span>
+                    </div>
+                    <div class="col-4">
+                        <small class="text-success d-block text-uppercase fw-bold" style="font-size:0.7rem;letter-spacing:1px;">Type</small>
+                        <span class="text-white fw-bold">{{ project.type or 'N/A' }}</span>
+                    </div>
+                </div>
+
+                <!-- Description -->
+                <div class="mb-5">
+                    <h4 class="text-white fw-bold mb-3">📋 Project Overview</h4>
+                    <p class="text-white-50" style="line-height:1.8;">{{ project.description or 'No description available.' }}</p>
+                </div>
+
+                <!-- Expected Output -->
+                {% if project.expected_output %}
+                <div class="mb-5 p-4 rounded-4" style="background:rgba(45,106,79,0.1);border:1px solid rgba(45,106,79,0.3);">
+                    <h5 class="text-success fw-bold mb-2">🎯 Expected Outcome</h5>
+                    <p class="mb-0 text-white-50">{{ project.expected_output }}</p>
+                </div>
+                {% endif %}
+
+                <!-- Steps / Curriculum -->
+                {% if steps %}
+                <div class="mb-5">
+                    <h4 class="text-white fw-bold mb-4">🗺️ Project Curriculum</h4>
+                    {% for step in steps %}
+                    <div class="d-flex mb-4 animate__animated animate__fadeInUp" style="animation-delay:{{ loop.index0 * 0.07 }}s;">
+                        <div class="me-4 flex-shrink-0">
+                            <div class="bg-success text-white rounded-circle d-flex align-items-center justify-content-center fw-bold"
+                                 style="width:36px;height:36px;font-size:0.9rem;">
+                                {{ loop.index }}
+                            </div>
+                        </div>
+                        <div>
+                            <h6 class="text-white fw-bold mb-1">{{ step.title }}</h6>
+                            <p class="text-white-50 small mb-0" style="line-height:1.6;">{{ step.desc }}</p>
+                        </div>
+                    </div>
+                    {% endfor %}
+                </div>
+                {% endif %}
+
+                <!-- Action Buttons -->
+                <div class="d-flex gap-3 flex-wrap mt-5 pt-3 border-top border-secondary border-opacity-25">
+                    <a href="/start/{{ project.id }}" class="btn btn-success flex-grow-1 py-3 fw-bold rounded-pill shadow">
+                        🚀 Start This Project
+                    </a>
+                    <a href="/explain/{{ project.id }}" class="btn btn-outline-success py-3 px-4 rounded-pill">
+                        🤖 AI Explain
+                    </a>
+                    <a href="/guide/{{ project.id }}" class="btn btn-outline-warning py-3 px-4 rounded-pill fw-bold">
+                        📖 Full Guide
+                    </a>
+                </div>
+                <div class="text-center mt-3">
+                    <a href="javascript:history.back()" class="text-white-50 text-decoration-none small">← Back to Results</a>
+                </div>
+
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

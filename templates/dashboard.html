@@ -1,0 +1,718 @@
+{% extends 'base.html' %}
+{% block title %}My Greenhouse — Projectree{% endblock %}
+
+{% block head %}
+<link href="https://fonts.googleapis.com/css2?family=DM+Serif+Display:ital@0;1&family=DM+Sans:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+/* ── GREENHOUSE DASHBOARD ─────────────────────────── */
+.gh-hero { padding: 3rem 0 2rem; }
+.xp-bar-track { background: rgba(255,255,255,0.08); border-radius: 99px; height: 8px; overflow:hidden; }
+.xp-bar-fill  { background: linear-gradient(90deg, #2d6a4f, #95d5b2); border-radius:99px; height:100%;
+                 transition: width 1s cubic-bezier(.4,0,.2,1); }
+
+/* ── GROWING TREE CARD ─────────────────────────────── */
+.tree-card { background: rgba(10,20,15,0.6); border:1px solid rgba(45,106,79,0.3);
+             border-radius: 20px; overflow:hidden; transition: all 0.3s; position:relative; }
+.tree-card:hover { border-color: rgba(149,213,178,0.4); box-shadow:0 16px 48px rgba(45,106,79,0.2); }
+.tree-canvas-wrap { position:relative; background: linear-gradient(180deg, rgba(4,14,9,0.8) 0%, rgba(10,30,20,0.6) 100%);
+                     border-radius:14px; overflow:hidden; transition: box-shadow 0.4s; }
+.tree-canvas-wrap.growing {
+  box-shadow: 0 0 0 2px rgba(149,213,178,0.5), 0 0 24px rgba(45,106,79,0.6);
+  animation: growPulse 0.9s ease-out;
+}
+@keyframes growPulse {
+  0%   { box-shadow: 0 0 0 2px rgba(149,213,178,0.8), 0 0 32px rgba(45,106,79,0.9); }
+  100% { box-shadow: 0 0 0 2px rgba(149,213,178,0),   0 0 0   rgba(45,106,79,0); }
+}
+.tree-stage-label { position:absolute; top:10px; left:50%; transform:translateX(-50%);
+                     font-size:11px; letter-spacing:2px; text-transform:uppercase;
+                     color: rgba(149,213,178,0.7); font-weight:600; white-space:nowrap; }
+
+/* Step checklist */
+.step-item { display:flex; align-items:flex-start; gap:12px; padding:10px 12px; border-radius:10px;
+              transition: all 0.25s; cursor:pointer; }
+.step-item:hover { background:rgba(45,106,79,0.1); }
+.step-item.done  { opacity:.5; }
+.step-checkbox { width:20px; height:20px; min-width:20px; border-radius:6px; border:2px solid rgba(149,213,178,0.4);
+                  display:flex; align-items:center; justify-content:center; transition:all 0.2s;
+                  background: transparent; cursor:pointer; }
+.step-checkbox.checked { background:#2d6a4f; border-color:#95d5b2; }
+.step-checkbox.checked::after { content:'✓'; color:#d8f3dc; font-size:12px; font-weight:700; }
+.step-text-title { font-size:.875rem; font-weight:600; color:#e8f5ee; line-height:1.3; }
+.step-text-desc  { font-size:.775rem; color:rgba(255,255,255,0.4); line-height:1.4; margin-top:2px; }
+
+/* Progress ring */
+.prog-ring-wrap { position:relative; width:64px; height:64px; flex-shrink:0; }
+.prog-ring-wrap svg { transform: rotate(-90deg); }
+.prog-ring-pct  { position:absolute; inset:0; display:flex; align-items:center; justify-content:center;
+                   font-size:.75rem; font-weight:700; color:#95d5b2; }
+
+/* XP toast */
+.xp-toast { position:fixed; top:80px; right:24px; z-index:9999;
+             background:linear-gradient(135deg,#2d6a4f,#40916c); color:#d8f3dc;
+             border-radius:12px; padding:10px 18px; font-weight:600; font-size:.875rem;
+             box-shadow:0 8px 24px rgba(45,106,79,0.5); display:flex; align-items:center; gap:8px;
+             animation: toastIn 0.4s ease; pointer-events:none; }
+@keyframes toastIn { from{opacity:0;transform:translateX(40px)} to{opacity:1;transform:translateX(0)} }
+@keyframes toastOut{ from{opacity:1;transform:translateX(0)} to{opacity:0;transform:translateX(40px)} }
+
+/* Badge pill */
+.badge-pill { display:inline-flex; align-items:center; gap:6px; background:rgba(45,106,79,0.15);
+               border:1px solid rgba(45,106,79,0.3); border-radius:50px; padding:4px 12px;
+               font-size:.75rem; color:#95d5b2; font-weight:500; }
+
+/* Mastered forest grid */
+.forest-tile { background:rgba(20,50,35,0.5); border:1px solid rgba(45,106,79,0.25);
+                border-radius:14px; padding:14px; display:flex; align-items:center; gap:12px;
+                transition:all 0.2s; }
+.forest-tile:hover { border-color:rgba(149,213,178,0.4); transform:translateY(-2px); }
+
+/* Level pill in nav area */
+.level-chip { background:rgba(45,106,79,0.2); border:1px solid rgba(45,106,79,0.4);
+               border-radius:50px; padding:4px 14px; font-size:.78rem; color:#95d5b2; font-weight:600; }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="container py-4 mt-1">
+
+  <!-- ── HERO HEADER ─────────────────────────────── -->
+  <div class="gh-hero">
+    <div class="d-flex justify-content-between align-items-start flex-wrap gap-3">
+      <div>
+        <p class="text-success small fw-bold mb-1" style="letter-spacing:3px;">MY GREENHOUSE</p>
+        <h1 class="display-5 fw-bold text-white mb-0" style="font-family:'DM Serif Display',serif;">
+          Growing <em style="color:#95d5b2;">Knowledge</em> 🌿
+        </h1>
+      </div>
+      <div class="d-flex flex-column align-items-end gap-2">
+        <div class="d-flex align-items-center gap-2 flex-wrap justify-content-end">
+          <span class="level-chip">Lv.{{ lvl_info.level }} {{ lvl_info.name }}</span>
+          {% if stats.streak_days > 0 %}
+          <span class="badge-pill">🔥 {{ stats.streak_days }}-day streak</span>
+          {% endif %}
+          <a href="/forest" class="btn btn-sm btn-outline-success rounded-pill px-3">🌳 My Forest</a>
+          <a href="/quiz" class="btn btn-sm btn-success rounded-pill px-3">+ New Project</a>
+        </div>
+        <!-- XP Bar -->
+        <div style="width:260px;">
+          <div class="d-flex justify-content-between mb-1">
+            <small class="text-white-50" style="font-size:.72rem;">{{ lvl_info.xp }} XP</small>
+            <small class="text-white-50" style="font-size:.72rem;">Next: {{ lvl_info.next_floor }} XP</small>
+          </div>
+          <div class="xp-bar-track">
+            <div class="xp-bar-fill" id="xpFill" style="width:{{ lvl_info.progress_pct }}%;"></div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ── STATS ROW ─────────────────────────────────── -->
+  <div class="row g-3 mb-4">
+    <div class="col-6 col-md-3">
+      <div class="glass-card p-3 text-center">
+        <div class="fs-1 fw-bold text-success">{{ active|length }}</div>
+        <small class="text-white-50 text-uppercase" style="letter-spacing:1px;font-size:.7rem;">Growing</small>
+      </div>
+    </div>
+    <div class="col-6 col-md-3">
+      <div class="glass-card p-3 text-center">
+        <div class="fs-1 fw-bold text-white">{{ done|length }}</div>
+        <small class="text-white-50 text-uppercase" style="letter-spacing:1px;font-size:.7rem;">Mastered</small>
+      </div>
+    </div>
+    <div class="col-6 col-md-3">
+      <div class="glass-card p-3 text-center">
+        <div class="fs-1 fw-bold text-warning">{{ lvl_info.xp }}</div>
+        <small class="text-white-50 text-uppercase" style="letter-spacing:1px;font-size:.7rem;">XP Earned</small>
+      </div>
+    </div>
+    <div class="col-6 col-md-3">
+      <div class="glass-card p-3 text-center">
+        <div class="fs-1 fw-bold" style="color:#95d5b2;">{{ badges|length }}</div>
+        <small class="text-white-50 text-uppercase" style="letter-spacing:1px;font-size:.7rem;">Badges</small>
+      </div>
+    </div>
+  </div>
+
+  <!-- ── BADGES ROW ─────────────────────────────────── -->
+  {% if badges %}
+  <div class="mb-4 d-flex flex-wrap gap-2 align-items-center">
+    <small class="text-white-50 me-1" style="letter-spacing:1px;font-size:.72rem;text-transform:uppercase;">Achievements:</small>
+    {% for b in badges %}
+    <span class="badge-pill" title="{{ b.description }}">{{ b.emoji }} {{ b.title }}</span>
+    {% endfor %}
+  </div>
+  {% endif %}
+
+  <div class="row g-4">
+    <!-- ── ACTIVE PROJECTS (LEFT) ──────────────────── -->
+    <div class="col-lg-8">
+      <h5 class="text-white mb-3 opacity-75" style="font-family:'DM Serif Display',serif;">🌱 Active Branches</h5>
+
+      {% if not active %}
+      <div class="glass-card text-center py-5">
+        <div style="font-size:3rem;" class="mb-3">🪴</div>
+        <p class="text-white-50 mb-3">Your greenhouse is empty. Pick a project to start growing.</p>
+        <a href="/quiz" class="btn btn-outline-success rounded-pill px-4">Find a Project</a>
+      </div>
+      {% endif %}
+
+      {% for p in active %}
+      {% set prog = project_progress.get(p.id, {"total":0,"done":0,"pct":0,"completed_indices":[]}) %}
+      <div class="tree-card mb-4 p-4" id="card-{{ p.id }}">
+        <!-- Card Header -->
+        <div class="d-flex justify-content-between align-items-start mb-3 flex-wrap gap-2">
+          <div class="flex-grow-1">
+            <div class="d-flex align-items-center gap-2 mb-1 flex-wrap">
+              <span class="badge bg-success bg-opacity-10 text-success border border-success" style="font-size:.7rem;">{{ p.language }}</span>
+              <span class="badge bg-secondary bg-opacity-10 text-white-50 border border-secondary border-opacity-25" style="font-size:.7rem;">{{ p.level }}</span>
+              <span class="badge bg-warning bg-opacity-10 text-warning border border-warning border-opacity-25" style="font-size:.7rem;">{{ p.duration_days }}d</span>
+            </div>
+            <h4 class="fw-bold text-white mb-0" style="font-family:'DM Serif Display',serif; font-size:1.2rem;">{{ p.title }}</h4>
+            <p class="small text-white-50 mb-0 mt-1">{{ p.interest }} · {{ p.type }}</p>
+          </div>
+          <!-- Progress Ring -->
+          <div class="prog-ring-wrap">
+            <svg width="64" height="64" viewBox="0 0 64 64">
+              <circle cx="32" cy="32" r="26" fill="none" stroke="rgba(255,255,255,0.07)" stroke-width="5"/>
+              <circle cx="32" cy="32" r="26" fill="none" stroke="#2d6a4f" stroke-width="5"
+                      stroke-dasharray="163.4" stroke-dashoffset="{{ 163.4 - (163.4 * prog.pct / 100)|round(1) }}"
+                      stroke-linecap="round" id="ring-{{ p.id }}" style="transition:stroke-dashoffset 0.8s ease;"/>
+            </svg>
+            <div class="prog-ring-pct" id="pct-{{ p.id }}">{{ prog.pct|int }}%</div>
+          </div>
+        </div>
+
+        <!-- ── GROWING TREE VISUALIZATION ──────────── -->
+        <div class="tree-canvas-wrap mb-3 p-2" style="border-radius:14px;">
+          <div class="tree-stage-label" id="stage-{{ p.id }}">{{ treestage(prog.pct) if treestage is defined else "Growing..." }}</div>
+          <canvas id="tree-{{ p.id }}" width="420" height="160" style="width:100%;height:auto;display:block;"></canvas>
+        </div>
+
+        <!-- Steps Checklist -->
+        {% set steps = p.steps_list() %}
+        {% if steps %}
+        <div class="mt-1">
+          <h6 class="text-success small fw-bold mb-2 text-uppercase" style="letter-spacing:1px;font-size:.7rem;">
+            Curriculum — {{ prog.done }}/{{ prog.total }} complete
+          </h6>
+          <div id="steps-{{ p.id }}">
+          {% for step in steps %}
+          {% set is_done = loop.index0 in prog.completed_indices %}
+          <div class="step-item {{ 'done' if is_done else '' }}" id="step-{{ p.id }}-{{ loop.index0 }}">
+            <div class="step-checkbox {{ 'checked' if is_done else '' }}"
+                 id="chk-{{ p.id }}-{{ loop.index0 }}"
+                 onclick="toggleStep({{ p.id }}, {{ loop.index0 }}, this)">
+            </div>
+            <div class="flex-grow-1">
+              <div class="step-text-title">{{ step.title }}</div>
+              {% if step.desc %}
+              <div class="step-text-desc">{{ step.desc }}</div>
+              {% endif %}
+            </div>
+          </div>
+          {% endfor %}
+          </div>
+        </div>
+        {% endif %}
+
+        <!-- Actions -->
+        <div class="mt-3 pt-3 border-top border-secondary border-opacity-25 d-flex gap-2 flex-wrap">
+          <a href="/project/{{ p.id }}" class="btn btn-sm btn-outline-secondary rounded-pill px-3">Details</a>
+          <a href="/explain/{{ p.id }}" class="btn btn-sm btn-outline-secondary rounded-pill px-3">🤖 AI Explain</a>
+          <a href="/guide/{{ p.id }}" class="btn btn-sm btn-outline-warning rounded-pill px-3 fw-bold">📖 Full Guide</a>
+          <button onclick="masterProject({{ p.id }})" class="btn btn-sm btn-success rounded-pill px-4 ms-auto fw-bold">
+            ✅ Mark Mastered
+          </button>
+        </div>
+      </div>
+      {% endfor %}
+    </div>
+
+    <!-- ── RIGHT SIDEBAR ────────────────────────────── -->
+    <div class="col-lg-4">
+
+      <!-- Mastered Forest -->
+      <h5 class="text-white mb-3 opacity-75" style="font-family:'DM Serif Display',serif;">🌳 Mastered Forest</h5>
+      <div class="glass-card p-3 mb-4">
+        {% if not done %}
+        <p class="small text-white-50 text-center fst-italic py-3 mb-0">
+          Complete your first project to grow your forest!
+        </p>
+        {% endif %}
+        {% for p in done %}
+        <div class="forest-tile mb-2">
+          <canvas id="mini-tree-{{ p.id }}" width="48" height="48" style="width:48px;height:48px;"></canvas>
+          <div class="flex-grow-1 min-width-0">
+            <div class="text-white fw-bold small text-truncate">{{ p.title }}</div>
+            <div class="text-success" style="font-size:.72rem;">{{ p.language }} · Mastered ✓</div>
+          </div>
+        </div>
+        {% endfor %}
+        {% if done|length > 0 %}
+        <div class="text-center mt-3">
+          <a href="/forest" class="btn btn-sm btn-outline-success rounded-pill px-4">View Full Forest →</a>
+        </div>
+        {% endif %}
+      </div>
+
+      <!-- Level Info -->
+      <div class="glass-card p-3">
+        <h6 class="text-white fw-bold mb-3">🏅 Your Progress</h6>
+        <div class="text-center mb-3">
+          <div style="font-size:2.5rem;">{{ levelemoji(lvl_info.level) }}</div>
+          <div class="text-white fw-bold">{{ lvl_info.name }}</div>
+          <div class="text-white-50 small">Level {{ lvl_info.level }}</div>
+        </div>
+        <div class="xp-bar-track mb-2">
+          <div class="xp-bar-fill" style="width:{{ lvl_info.progress_pct }}%;"></div>
+        </div>
+        <div class="d-flex justify-content-between">
+          <small class="text-white-50" style="font-size:.7rem;">{{ lvl_info.xp }} XP</small>
+          <small class="text-white-50" style="font-size:.7rem;">{{ lvl_info.next_floor }} XP</small>
+        </div>
+        <div class="mt-3 pt-2 border-top border-secondary border-opacity-25">
+          <div class="d-flex align-items-center gap-2 mb-1">
+            <span class="text-white-50 small">🔥 Streak:</span>
+            <span class="text-white fw-bold small">{{ stats.streak_days }} days</span>
+          </div>
+          <div class="d-flex align-items-center gap-2">
+            <span class="text-white-50 small">🌳 Trees grown:</span>
+            <span class="text-white fw-bold small">{{ stats.trees_grown }}</span>
+          </div>
+        </div>
+      </div>
+
+    </div>
+  </div>
+</div>
+
+<!-- XP Toast Container -->
+<div id="xpToastContainer" style="position:fixed;top:80px;right:24px;z-index:9999;"></div>
+
+<!-- Confetti -->
+<script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.9.2/dist/confetti.browser.min.js"></script>
+
+<script>
+// ── TREE DRAWING ENGINE ──────────────────────────────────
+const TREE_STAGES = [
+  { min:0,   label:"Seed",        emoji:"🌱" },
+  { min:1,   label:"Sprouting",   emoji:"🌿" },
+  { min:20,  label:"Sapling",     emoji:"🌱" },
+  { min:40,  label:"Young Tree",  emoji:"🌲" },
+  { min:60,  label:"Growing",     emoji:"🌳" },
+  { min:80,  label:"Flourishing", emoji:"🌳" },
+  { min:100, label:"Mastered!",   emoji:"🏆" },
+];
+
+function getStage(pct) {
+  let stage = TREE_STAGES[0];
+  for (const s of TREE_STAGES) { if (pct >= s.min) stage = s; }
+  return stage;
+}
+
+function drawTree(canvas, pct, miniMode=false) {
+  const ctx  = canvas.getContext("2d");
+  const W    = canvas.width;
+  const H    = canvas.height;
+  ctx.clearRect(0, 0, W, H);
+
+  const groundY = H - (miniMode ? 6 : 14);
+  const p       = Math.min(pct / 100, 1);
+
+  // Draw ground
+  const grd = ctx.createLinearGradient(0, groundY, 0, H);
+  grd.addColorStop(0, "rgba(45,106,79,0.5)");
+  grd.addColorStop(1, "rgba(20,50,30,0.3)");
+  ctx.fillStyle = grd;
+  ctx.beginPath();
+  ctx.ellipse(W/2, groundY, (miniMode?18:50)*Math.max(0.3,p), miniMode?5:10, 0, 0, Math.PI*2);
+  ctx.fill();
+
+  if (p === 0) {
+    // Seed
+    ctx.fillStyle = "#2d6a4f";
+    ctx.beginPath();
+    ctx.ellipse(W/2, groundY - 2, miniMode?3:6, miniMode?4:8, 0, 0, Math.PI*2);
+    ctx.fill();
+    return;
+  }
+
+  const trunkH = (miniMode ? 20 : 80) * Math.min(1, p * 2);
+  const trunkW = miniMode ? 3 : 8;
+  const trunkX = W / 2;
+  const trunkTop = groundY - trunkH;
+
+  // Trunk
+  const tGrad = ctx.createLinearGradient(trunkX - trunkW, 0, trunkX + trunkW, 0);
+  tGrad.addColorStop(0,   "#1a3320");
+  tGrad.addColorStop(0.5, "#2d5a38");
+  tGrad.addColorStop(1,   "#1a3320");
+  ctx.fillStyle = tGrad;
+  ctx.beginPath();
+  ctx.moveTo(trunkX - trunkW, groundY);
+  ctx.lineTo(trunkX - trunkW * 0.5, trunkTop);
+  ctx.lineTo(trunkX + trunkW * 0.5, trunkTop);
+  ctx.lineTo(trunkX + trunkW, groundY);
+  ctx.fill();
+
+  if (p < 0.05) return;
+
+  // Helper: draw a branch with leaves
+  function branch(x, y, angle, length, depth, leafScale) {
+    if (depth <= 0 || length < (miniMode?2:5)) return;
+    const ex = x + Math.cos(angle) * length;
+    const ey = y + Math.sin(angle) * length;
+    ctx.strokeStyle = depth > 1 ? "#2d5a38" : "#3a7d52";
+    ctx.lineWidth   = Math.max(0.5, depth * (miniMode?0.8:1.5));
+    ctx.beginPath();
+    ctx.moveTo(x, y);
+    ctx.lineTo(ex, ey);
+    ctx.stroke();
+    branch(ex, ey, angle - 0.45, length * 0.7, depth-1, leafScale);
+    branch(ex, ey, angle + 0.45, length * 0.7, depth-1, leafScale);
+    // Leaves
+    if (depth <= 2 && leafScale > 0) {
+      const r = (miniMode?5:18) * leafScale;
+      const colors = ["rgba(45,106,79,0.7)","rgba(64,145,108,0.6)","rgba(149,213,178,0.5)"];
+      colors.forEach((c, i) => {
+        ctx.fillStyle = c;
+        ctx.beginPath();
+        ctx.ellipse(ex + (i-1)*r*0.3, ey - r*0.2, r*(0.9+i*0.1), r*(0.7+i*0.1), 0, 0, Math.PI*2);
+        ctx.fill();
+      });
+    }
+  }
+
+  // Branch count based on progress
+  const branchDepth  = p < 0.2 ? 1 : p < 0.4 ? 2 : p < 0.6 ? 3 : p < 0.8 ? 4 : 4;
+  const branchLength = (miniMode ? 10 : 38) * Math.min(1, p * 1.4);
+  const leafScale    = Math.max(0, (p - 0.3) / 0.7);
+
+  if (p > 0.15) {
+    branch(trunkX, trunkTop, -Math.PI/2 - 0.5, branchLength * 0.85, branchDepth, leafScale);
+    branch(trunkX, trunkTop, -Math.PI/2 + 0.5, branchLength * 0.85, branchDepth, leafScale);
+  }
+  if (p > 0.35) {
+    const mid = trunkTop + trunkH * 0.45;
+    branch(trunkX, mid, -Math.PI/2 - 0.65, branchLength * 0.6, branchDepth-1, leafScale*0.8);
+    branch(trunkX, mid, -Math.PI/2 + 0.65, branchLength * 0.6, branchDepth-1, leafScale*0.8);
+  }
+  if (p > 0.6) {
+    const low = trunkTop + trunkH * 0.7;
+    branch(trunkX, low, -Math.PI/2 - 0.8, branchLength*0.45, Math.max(1,branchDepth-2), leafScale*0.6);
+    branch(trunkX, low, -Math.PI/2 + 0.8, branchLength*0.45, Math.max(1,branchDepth-2), leafScale*0.6);
+  }
+
+  // Fruits / flowers at 100%
+  if (p >= 1 && !miniMode) {
+    const fruits = [[W/2-28, trunkTop+8],[W/2+24, trunkTop+16],[W/2-10, trunkTop-2],
+                    [W/2+38, trunkTop+40],[W/2-38, trunkTop+36]];
+    fruits.forEach(([fx,fy]) => {
+      ctx.fillStyle = "#d62828";
+      ctx.beginPath(); ctx.arc(fx,fy,5,0,Math.PI*2); ctx.fill();
+      ctx.fillStyle = "#f94144";
+      ctx.beginPath(); ctx.arc(fx+1,fy-1,2,0,Math.PI*2); ctx.fill();
+    });
+  }
+
+  // Stars / sparkle at 100%
+  if (p >= 1 && !miniMode) {
+    const sparkles = [[W/2-50, trunkTop-10],[W/2+55, trunkTop+5],[W/2, trunkTop-18]];
+    sparkles.forEach(([sx,sy]) => {
+      ctx.fillStyle = "rgba(255,213,100,0.9)";
+      ctx.font = "14px serif"; ctx.textAlign = "center";
+      ctx.fillText("✦", sx, sy);
+    });
+  }
+}
+
+// ── DRAW TREE WITH SWAY ─────────────────────────────
+function drawTreeWithSway(ctx, W, H, pct, swayOffset) {
+  // This mirrors drawTree but applies a horizontal sway to all elements
+  const p = Math.min(pct / 100, 1);
+  const groundY = H - 14;
+
+  // Ground
+  const grd = ctx.createLinearGradient(0, groundY, 0, H);
+  grd.addColorStop(0, "rgba(45,106,79,0.5)");
+  grd.addColorStop(1, "rgba(20,50,30,0.3)");
+  ctx.fillStyle = grd;
+  ctx.beginPath();
+  ctx.ellipse(W/2 + swayOffset*0.3, groundY, 50*Math.max(0.3,p), 10, 0, 0, Math.PI*2);
+  ctx.fill();
+
+  if (p === 0) {
+    ctx.fillStyle = "#2d6a4f";
+    ctx.beginPath();
+    ctx.ellipse(W/2, groundY - 2, 6, 8, 0, 0, Math.PI*2);
+    ctx.fill();
+    return;
+  }
+
+  const trunkH = 80 * Math.min(1, p * 2);
+  const trunkW = 8;
+  const trunkX = W / 2 + swayOffset * 0.1;
+  const trunkTop = groundY - trunkH;
+  const topX = W / 2 + swayOffset;
+
+  const tGrad = ctx.createLinearGradient(trunkX - trunkW, 0, trunkX + trunkW, 0);
+  tGrad.addColorStop(0, "#1a3320");
+  tGrad.addColorStop(0.5, "#2d5a38");
+  tGrad.addColorStop(1, "#1a3320");
+  ctx.fillStyle = tGrad;
+  ctx.beginPath();
+  ctx.moveTo(trunkX - trunkW, groundY);
+  ctx.lineTo(topX - trunkW * 0.5, trunkTop);
+  ctx.lineTo(topX + trunkW * 0.5, trunkTop);
+  ctx.lineTo(trunkX + trunkW, groundY);
+  ctx.fill();
+
+  if (p < 0.05) return;
+
+  function branch(x, y, angle, length, depth, leafScale) {
+    if (depth <= 0 || length < 5) return;
+    const ex = x + Math.cos(angle) * length;
+    const ey = y + Math.sin(angle) * length;
+    ctx.strokeStyle = depth > 1 ? "#2d5a38" : "#3a7d52";
+    ctx.lineWidth = Math.max(0.5, depth * 1.5);
+    ctx.beginPath(); ctx.moveTo(x, y); ctx.lineTo(ex, ey); ctx.stroke();
+    branch(ex, ey, angle - 0.45, length * 0.7, depth-1, leafScale);
+    branch(ex, ey, angle + 0.45, length * 0.7, depth-1, leafScale);
+    if (depth <= 2 && leafScale > 0) {
+      const r = 18 * leafScale;
+      ["rgba(45,106,79,0.7)","rgba(64,145,108,0.6)","rgba(149,213,178,0.5)"].forEach((c, i) => {
+        ctx.fillStyle = c;
+        ctx.beginPath();
+        ctx.ellipse(ex + (i-1)*r*0.3, ey - r*0.2, r*(0.9+i*0.1), r*(0.7+i*0.1), 0, 0, Math.PI*2);
+        ctx.fill();
+      });
+    }
+  }
+
+  const branchDepth = p < 0.2 ? 1 : p < 0.4 ? 2 : p < 0.6 ? 3 : 4;
+  const branchLength = 38 * Math.min(1, p * 1.4);
+  const leafScale = Math.max(0, (p - 0.3) / 0.7);
+
+  if (p > 0.15) {
+    branch(topX, trunkTop, -Math.PI/2 - 0.5, branchLength * 0.85, branchDepth, leafScale);
+    branch(topX, trunkTop, -Math.PI/2 + 0.5, branchLength * 0.85, branchDepth, leafScale);
+  }
+  if (p > 0.35) {
+    const mid = trunkTop + trunkH * 0.45;
+    branch(topX * 0.7 + trunkX * 0.3, mid, -Math.PI/2 - 0.65, branchLength * 0.6, branchDepth-1, leafScale*0.8);
+    branch(topX * 0.7 + trunkX * 0.3, mid, -Math.PI/2 + 0.65, branchLength * 0.6, branchDepth-1, leafScale*0.8);
+  }
+  if (p > 0.6) {
+    const low = trunkTop + trunkH * 0.7;
+    branch(trunkX, low, -Math.PI/2 - 0.8, branchLength*0.45, Math.max(1,branchDepth-2), leafScale*0.6);
+    branch(trunkX, low, -Math.PI/2 + 0.8, branchLength*0.45, Math.max(1,branchDepth-2), leafScale*0.6);
+  }
+  if (p >= 1) {
+    [[W/2-28, trunkTop+8],[W/2+24, trunkTop+16],[W/2-10, trunkTop-2],[W/2+38, trunkTop+40],[W/2-38, trunkTop+36]].forEach(([fx,fy]) => {
+      ctx.fillStyle = "#d62828"; ctx.beginPath(); ctx.arc(fx+swayOffset*0.5, fy, 5, 0, Math.PI*2); ctx.fill();
+    });
+    [[W/2-50, trunkTop-10],[W/2+55, trunkTop+5],[W/2, trunkTop-18]].forEach(([sx,sy]) => {
+      ctx.fillStyle = "rgba(255,213,100,0.9)";
+      ctx.font = "14px serif"; ctx.textAlign = "center";
+      ctx.fillText("✦", sx+swayOffset*0.5, sy);
+    });
+  }
+}
+
+// ── INIT ALL TREES ───────────────────────────────────
+const treeData = {
+  {% for p in active %}
+  "{{ p.id }}": {{ project_progress.get(p.id, {"pct":0}).pct }},
+  {% endfor %}
+};
+const miniTrees = [{% for p in done %}"{{ p.id }}"{% if not loop.last %},{% endif %}{% endfor %}];
+
+function updateStageLabel(id, pct) {
+  const el = document.getElementById("stage-" + id);
+  if (!el) return;
+  const stage = getStage(pct);
+  el.textContent = stage.emoji + " " + stage.label;
+}
+
+document.addEventListener("DOMContentLoaded", () => {
+  // Use rAF to ensure layout is fully painted before drawing
+  requestAnimationFrame(() => {
+    // Draw active project trees
+    for (const [id, pct] of Object.entries(treeData)) {
+      const c = document.getElementById("tree-" + id);
+      if (c) { drawTree(c, pct); updateStageLabel(id, pct); }
+    }
+    // Draw mini mastered trees
+    miniTrees.forEach(id => {
+      const c = document.getElementById("mini-tree-" + id);
+      if (c) drawTree(c, 100, true);
+    });
+
+    // Start gentle sway animation for active trees
+    function swayLoop() {
+      for (const [id, pct] of Object.entries(treeData)) {
+        const c = document.getElementById("tree-" + id);
+        if (c) drawTreeSway(c, pct, id);
+      }
+      requestAnimationFrame(swayLoop);
+    }
+    if (Object.keys(treeData).length > 0) swayLoop();
+  });
+});
+
+// Draw tree with gentle sway based on time
+function drawTreeSway(canvas, pct, id) {
+  const ctx = canvas.getContext("2d");
+  const W = canvas.width, H = canvas.height;
+  ctx.clearRect(0, 0, W, H);
+  const sway = Math.sin(Date.now() / 1800 + (parseInt(id) || 0) * 1.2) * 2.5;
+  drawTreeWithSway(ctx, W, H, pct, sway);
+}
+
+// ── STEP TOGGLE ──────────────────────────────────────
+function toggleStep(projectId, stepIndex, el) {
+  const isChecked = !el.classList.contains("checked");
+  el.classList.toggle("checked", isChecked);
+  const row = document.getElementById(`step-${projectId}-${stepIndex}`);
+  if (row) row.classList.toggle("done", isChecked);
+
+  fetch("/api/step-check", {
+    method: "POST",
+    headers: {"Content-Type": "application/json"},
+    body: JSON.stringify({project_id: projectId, step_index: stepIndex, checked: isChecked})
+  })
+  .then(r => r.json())
+  .then(data => {
+    if (!data.ok) return;
+    const {pct, done, total} = data.progress;
+
+    // Update ring
+    const ring = document.getElementById("ring-" + projectId);
+    if (ring) {
+      const offset = 163.4 - (163.4 * pct / 100);
+      ring.setAttribute("stroke-dashoffset", offset.toFixed(1));
+    }
+    const pctEl = document.getElementById("pct-" + projectId);
+    if (pctEl) pctEl.textContent = Math.round(pct) + "%";
+
+    // Animate tree growth smoothly
+    const canvas = document.getElementById("tree-" + projectId);
+    if (canvas) {
+      const oldPct = treeData[projectId] || 0;
+      animateTreeGrowth(canvas, oldPct, pct, projectId);
+    }
+
+    // Update treeData
+    treeData[projectId] = pct;
+
+    // XP toast
+    if (data.xp_earned > 0) showXPToast(data.xp_earned, data.total_xp, data.level_info);
+
+    // Badge toast
+    (data.new_badges || []).forEach(b => showBadgeToast(b));
+
+    // Update global XP bar
+    if (data.level_info) {
+      const fill = document.getElementById("xpFill");
+      if (fill) fill.style.width = data.level_info.progress_pct + "%";
+    }
+  })
+  .catch(() => {}); // Silently fail — UI already updated optimistically
+}
+
+// ── TREE GROWTH ANIMATION ────────────────────────────
+function animateTreeGrowth(canvas, fromPct, toPct, projectId) {
+  // Add glow pulse on the canvas wrap
+  if (toPct > fromPct) {
+    const wrap = canvas.closest('.tree-canvas-wrap');
+    if (wrap) {
+      wrap.classList.remove('growing');
+      void wrap.offsetWidth; // reflow to restart animation
+      wrap.classList.add('growing');
+      setTimeout(() => wrap.classList.remove('growing'), 950);
+    }
+  }
+  const duration = 900; // ms
+  const start    = performance.now();
+
+  function easeOutCubic(t) { return 1 - Math.pow(1 - t, 3); }
+
+  function step(now) {
+    const elapsed  = now - start;
+    const progress = Math.min(elapsed / duration, 1);
+    const eased    = easeOutCubic(progress);
+    const current  = fromPct + (toPct - fromPct) * eased;
+
+    drawTree(canvas, current);
+    updateStageLabel(projectId, current);
+
+    if (progress < 1) {
+      requestAnimationFrame(step);
+    } else {
+      drawTree(canvas, toPct);
+      updateStageLabel(projectId, toPct);
+      // Leaf burst particles when growing
+      if (toPct > fromPct) spawnLeafParticles(canvas);
+    }
+  }
+  requestAnimationFrame(step);
+}
+
+function spawnLeafParticles(canvas) {
+  const rect    = canvas.getBoundingClientRect();
+  const centerX = (rect.left + rect.right)  / 2 / window.innerWidth;
+  const centerY = (rect.top  + rect.bottom) / 2 / window.innerHeight;
+
+  if (typeof confetti === 'function') {
+    confetti({
+      particleCount : 28,
+      startVelocity : 18,
+      spread        : 70,
+      origin        : { x: centerX, y: centerY },
+      colors        : ['#2d6a4f','#40916c','#95d5b2','#d8f3dc','#52b788'],
+      shapes        : ['circle'],
+      scalar        : 0.8,
+      gravity       : 0.7,
+      ticks         : 120
+    });
+  }
+}
+
+// ── TOASTS ───────────────────────────────────────────
+function showXPToast(earned, total, lvlInfo) {
+  const c = document.getElementById("xpToastContainer");
+  const d = document.createElement("div");
+  d.className = "xp-toast";
+  d.innerHTML = `<span>⚡</span><span>+${earned} XP</span><span style="opacity:.6;font-size:.8em;">${total} total</span>`;
+  c.appendChild(d);
+  setTimeout(() => { d.style.animation = "toastOut 0.4s ease forwards"; setTimeout(() => d.remove(), 400); }, 2200);
+}
+
+function showBadgeToast(badge) {
+  const c = document.getElementById("xpToastContainer");
+  const d = document.createElement("div");
+  d.className = "xp-toast";
+  d.style.background = "linear-gradient(135deg,#7b2d00,#c45e00)";
+  d.innerHTML = `<span>${badge.emoji}</span><span>Badge: ${badge.title}</span>`;
+  c.appendChild(d);
+  setTimeout(() => { d.style.animation = "toastOut 0.4s ease forwards"; setTimeout(() => d.remove(), 400); }, 3000);
+}
+
+// ── MASTER PROJECT ───────────────────────────────────
+function masterProject(projectId) {
+  const end = Date.now() + 2500;
+  (function frame() {
+    confetti({ particleCount: 5, angle: 60,  spread: 55, origin: {x:0}, colors:["#2d6a4f","#95d5b2","#fff"] });
+    confetti({ particleCount: 5, angle: 120, spread: 55, origin: {x:1}, colors:["#2d6a4f","#95d5b2","#fff"] });
+    if (Date.now() < end) requestAnimationFrame(frame);
+  }());
+  // Draw full tree
+  const canvas = document.getElementById("tree-" + projectId);
+  if (canvas) drawTree(canvas, 100);
+  setTimeout(() => { window.location.href = "/complete/" + projectId; }, 1600);
+}
+</script>
+{% endblock %}

@@ -1,0 +1,394 @@
+{% extends 'base.html' %}
+{% block title %}AI Career Assistant — Projectree{% endblock %}
+
+{% block head %}
+<link href="https://fonts.googleapis.com/css2?family=DM+Mono:wght@300;400;500&display=swap" rel="stylesheet">
+<style>
+/* ── Chat Layout with Sidebar ── */
+body { overflow: hidden; }
+.chat-layout {
+    display: flex;
+    height: calc(100vh - 70px);
+    width: 100%;
+}
+
+/* Sidebar */
+.chat-sidebar {
+    width: 260px;
+    background: rgba(4, 13, 10, 0.95);
+    border-right: 1px solid rgba(45,106,79,0.3);
+    display: flex;
+    flex-direction: column;
+    padding: 16px 12px;
+    flex-shrink: 0;
+}
+.new-chat-btn {
+    width: 100%;
+    background: transparent;
+    border: 1px solid rgba(149,213,178,0.4);
+    color: #95d5b2;
+    padding: 10px 14px;
+    border-radius: 12px;
+    text-align: left;
+    display: flex; align-items: center; gap: 8px;
+    transition: all 0.2s;
+    cursor: pointer;
+    font-weight: 500;
+}
+.new-chat-btn:hover { background: rgba(149,213,178,0.1); }
+
+.history-list {
+    flex: 1;
+    overflow-y: auto;
+    margin-top: 16px;
+}
+.history-list::-webkit-scrollbar { width: 4px; }
+.history-list::-webkit-scrollbar-thumb { background: #2d6a4f; border-radius: 2px; }
+
+.history-item {
+    padding: 10px 12px;
+    border-radius: 10px;
+    color: rgba(255,255,255,0.7);
+    font-size: 13.5px;
+    cursor: pointer;
+    margin-bottom: 4px;
+    display: block;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    text-decoration: none;
+    transition: all 0.2s;
+}
+.history-item:hover { background: rgba(45,106,79,0.2); }
+.history-item.active { background: rgba(45,106,79,0.4); color: #fff; font-weight: 500; }
+
+/* Main Chat Area */
+.chat-main {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    padding: 0 16px;
+    max-width: 860px;
+    margin: 0 auto;
+}
+
+.ai-banner {
+    display: flex;
+    align-items: center;
+    gap: 14px;
+    padding: 14px 20px;
+    background: rgba(45,106,79,0.12);
+    border: 1px solid rgba(45,106,79,0.3);
+    border-radius: 16px;
+    margin: 12px 0 8px;
+    flex-shrink: 0;
+}
+.ai-status-dot {
+    width: 8px; height: 8px;
+    background: #22c55e;
+    border-radius: 50%;
+    animation: pulse-dot 2s infinite;
+    flex-shrink: 0;
+}
+@keyframes pulse-dot {
+    0%,100% { opacity:1; box-shadow:0 0 0 0 rgba(34,197,94,0.4); }
+    50%      { opacity:.8; box-shadow:0 0 0 5px rgba(34,197,94,0); }
+}
+
+.chat-messages {
+    flex: 1;
+    overflow-y: auto;
+    padding: 8px 0 4px;
+    scroll-behavior: smooth;
+}
+.chat-messages::-webkit-scrollbar { width: 4px; }
+.chat-messages::-webkit-scrollbar-thumb { background: #2d6a4f; border-radius: 2px; }
+
+/* Messages */
+.message {
+    display: flex; gap: 10px; align-items: flex-start;
+    margin-bottom: 14px; animation: msgIn 0.3s ease forwards;
+}
+@keyframes msgIn { from{opacity:0;transform:translateY(10px)} to{opacity:1;transform:translateY(0)} }
+.message.user { flex-direction: row-reverse; }
+
+.avatar {
+    width: 32px; height: 32px; border-radius: 9px;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 16px; flex-shrink: 0; background: rgba(45,106,79,0.25);
+}
+.avatar.user { background: rgba(45,106,79,0.5); }
+
+.bubble {
+    max-width: 78%; padding: 12px 16px; border-radius: 16px;
+    font-size: 13.5px; line-height: 1.65; font-family: 'DM Mono', monospace;
+}
+.bubble.bot {
+    background: rgba(255,255,255,0.04); border: 1px solid rgba(255,255,255,0.08);
+    color: #d1fae5; border-radius: 4px 16px 16px 16px;
+}
+.bubble.user {
+    background: rgba(45,106,79,0.35); border: 1px solid rgba(64,145,108,0.4);
+    color: #fff; border-radius: 16px 4px 16px 16px;
+}
+.bubble code { background: rgba(149,213,178,0.12); padding: 1px 5px; border-radius: 4px; color: #95d5b2; font-size: 12px; }
+.bubble pre { background: rgba(0,0,0,0.5); padding: 10px; border-radius: 8px; color: #a8d5b5; overflow-x: auto; margin-top: 8px;}
+.bubble ul { padding-left: 16px; margin: 6px 0; }
+.bubble li { margin-bottom: 4px; }
+
+/* Typing indicator */
+.typing-indicator { display: none; gap: 10px; align-items: flex-start; margin-bottom: 14px; }
+.typing-indicator.active { display: flex; }
+.dots { background: rgba(255,255,255,0.04); border: 1px solid rgba(255,255,255,0.08); border-radius: 4px 16px 16px 16px; padding: 14px 18px; display: flex; gap: 5px; align-items: center; }
+.dot { width: 6px; height: 6px; background: #95d5b2; border-radius: 50%; animation: bounce 1.2s infinite; }
+.dot:nth-child(2) { animation-delay: 0.2s; }
+.dot:nth-child(3) { animation-delay: 0.4s; }
+@keyframes bounce { 0%,60%,100% { transform: translateY(0); opacity:.6; } 30% { transform: translateY(-6px); opacity:1; } }
+
+/* Input bar */
+.input-bar {
+    display: flex; gap: 10px; align-items: flex-end; padding: 10px 0 14px; flex-shrink: 0; border-top: 1px solid rgba(255,255,255,0.07);
+}
+.input-bar textarea {
+    flex: 1; background: rgba(255,255,255,0.05); border: 1px solid rgba(255,255,255,0.1); border-radius: 14px;
+    color: #e0e0e0; font-family: 'DM Mono', monospace; font-size: 13px; padding: 12px 16px; resize: none; outline: none; min-height: 44px; max-height: 120px; transition: border-color 0.2s; line-height: 1.5;
+}
+.input-bar textarea:focus { border-color: #2d6a4f; }
+.send-btn {
+    width: 44px; height: 44px; background: #2d6a4f; border: none; border-radius: 12px; cursor: pointer; display: flex; align-items: center; justify-content: center; transition: all 0.2s; flex-shrink: 0;
+}
+.send-btn:hover { background: #40916c; transform: scale(1.05); }
+.send-btn:disabled { opacity: 0.4; cursor: not-allowed; transform: none; }
+.send-btn svg { width: 18px; height: 18px; fill: white; }
+</style>
+{% endblock %}
+
+{% block content %}
+<!-- Use a data attribute to pass jinja context_project_id smoothly -->
+<div id="aiConfig" data-context-project="{{ context_project_id }}"></div>
+
+<div class="chat-layout">
+    <!-- Sidebar -->
+    <div class="chat-sidebar">
+        <button class="new-chat-btn" onclick="startNewSession()">
+            <span style="font-size:16px;">⨁</span> New Chat
+        </button>
+        <div class="text-white-50 small mt-4 fw-bold" style="letter-spacing: 1px;">HISTORY</div>
+        <div class="history-list" id="historyList">
+            <!-- Populated via JS -->
+        </div>
+    </div>
+
+    <!-- Main Chat content -->
+    <div class="chat-main" id="chatMain">
+        <div class="ai-banner">
+            <div class="ai-status-dot"></div>
+            <div>
+                <strong class="text-white" style="font-size:13px;">🌿 Projectree AI</strong>
+                <span class="text-white-50 small ms-2">Career Assistant · Powered by Llama 3.3 70B</span>
+            </div>
+            {% if context_project_id %}
+            <div class="ms-auto badge bg-success bg-opacity-25 border border-success text-success px-3">Project Mode Active</div>
+            {% endif %}
+        </div>
+
+        <div class="chat-messages" id="chatArea">
+            <div class="message">
+                <div class="avatar bot">🌿</div>
+                <div class="bubble bot">
+                    <strong>Hey! I'm your Projectree AI assistant.</strong><br><br>
+                    I speak Tanglish, English, and Tamil. I can help you with:<br>
+                    🚀 <strong>Project doubts & steps</strong><br>
+                    📄 <strong>Code explanations</strong><br>
+                    💼 <strong>Debugging & Errors</strong><br><br>
+                    Enna doubt iruku? (What doubt do you have?)
+                </div>
+            </div>
+            
+            <div class="typing-indicator" id="typingIndicator">
+                <div class="avatar bot">🌿</div>
+                <div class="dots"><div class="dot"></div><div class="dot"></div><div class="dot"></div></div>
+            </div>
+        </div>
+
+        <div class="input-bar">
+            <textarea id="userInput" placeholder="Ask anything in English or Tanglish..." rows="1"></textarea>
+            <button class="send-btn" id="sendBtn" onclick="sendMessage()">
+                <svg viewBox="0 0 24 24"><path d="M2.01 21L23 12 2.01 3 2 10l15 2-15 2z"/></svg>
+            </button>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+let currentSessionId = null;
+const contextProjectId = document.getElementById('aiConfig').getAttribute('data-context-project');
+const chatArea = document.getElementById('chatArea');
+const userInput = document.getElementById('userInput');
+const sendBtn = document.getElementById('sendBtn');
+const typing = document.getElementById('typingIndicator');
+
+// Auto-resize textarea
+userInput.addEventListener('input', function() {
+    this.style.height = 'auto';
+    this.style.height = Math.min(this.scrollHeight, 120) + 'px';
+});
+userInput.addEventListener('keydown', e => {
+    if (e.key === 'Enter' && !e.shiftKey) { e.preventDefault(); sendMessage(); }
+});
+
+function scrollBottom() { chatArea.scrollTo({ top: chatArea.scrollHeight, behavior: 'smooth' }); }
+function showTyping() { typing.classList.add('active'); scrollBottom(); }
+function hideTyping() { typing.classList.remove('active'); }
+
+function fmt(text) {
+    return text
+        .replace(/```([\s\S]*?)```/g, '<pre><code>$1</code></pre>') // Handle multiline code blocks
+        .replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>')
+        .replace(/\*(.*?)\*/g, '<em>$1</em>')
+        .replace(/`([^`\n]+)`/g, '<code>$1</code>') // Handle inline code
+        .replace(/^### (.*$)/gm, '<strong style="color:#95d5b2;font-size:13px;display:block;margin-top:8px;">$1</strong>')
+        .replace(/^## (.*$)/gm,  '<strong style="color:#95d5b2;font-size:14px;display:block;margin-top:8px;">$1</strong>')
+        .replace(/^[-•*] (.*$)/gm, '<li>$1</li>')
+        .replace(/(<li>[\s\S]*?<\/li>)/g, '<ul style="margin:6px 0;padding-left:16px;">$1</ul>')
+        .replace(/\n\n/g, '<br><br>')
+        .replace(/\n(?!(<\/ul>|<\/li>|<\/pre>|<pre>))/g, '<br>'); // Simple soft breaks
+}
+
+function addMsg(role, text) {
+    const wrap = document.createElement('div');
+    wrap.className = `message ${role}`;
+    
+    const av = document.createElement('div');
+    av.className = `avatar ${role}`;
+    av.textContent = role === 'bot' ? '🌿' : '👤';
+
+    const bub = document.createElement('div');
+    bub.className = `bubble ${role}`;
+    bub.innerHTML = fmt(text);
+
+    wrap.appendChild(av);
+    wrap.appendChild(bub);
+    chatArea.insertBefore(wrap, typing);
+    scrollBottom();
+}
+
+async function loadSessions() {
+    try {
+        const res = await fetch('/api/chat_sessions');
+        const sess = await res.json();
+        const list = document.getElementById('historyList');
+        list.innerHTML = '';
+        sess.forEach(s => {
+            const a = document.createElement('a');
+            a.className = `history-item ${s.id === currentSessionId ? 'active' : ''}`;
+            a.textContent = s.title;
+            // When clicked, navigate to chat with session query arg
+            a.onclick = () => loadChatHistory(s.id);
+            list.appendChild(a);
+        });
+    } catch(e) { console.error("Could not load sessions", e) }
+}
+
+async function createInternalSession() {
+    try {
+        const res = await fetch('/api/chat_sessions', {
+            method: 'POST',
+            headers: {'Content-Type': 'application/json'},
+            body: JSON.stringify({context_project_id: contextProjectId || null})
+        });
+        const data = await res.json();
+        currentSessionId = data.id;
+        loadSessions();
+    } catch(e) { console.error("Failed to create session", e) }
+}
+
+async function loadChatHistory(id) {
+    currentSessionId = id;
+    
+    // Clear Area (keep only welcome and typing)
+    const msgs = document.querySelectorAll('.message:not(:first-child)');
+    msgs.forEach(m => m.remove());
+
+    try {
+        const res = await fetch(`/api/chat_history/${id}`);
+        const data = await res.json();
+        if (data.messages && data.messages.length > 0) {
+            // Remove the default welcome message since we have real history
+            const defaultWelcome = document.querySelector('.message:first-child');
+            if (defaultWelcome) defaultWelcome.remove();
+
+            data.messages.forEach(m => {
+                addMsg(m.role === 'assistant' ? 'bot' : 'user', m.content);
+            });
+        }
+    } catch(e) { console.error("Error loading history", e) }
+    
+    loadSessions(); // to refresh active class
+}
+
+function startNewSession() {
+    window.location.href = "/chat";
+}
+
+async function sendMessage() {
+    const text = userInput.value.trim();
+    if (!text) return;
+
+    if (!currentSessionId) {
+        await createInternalSession();
+    }
+
+    userInput.value = ''; userInput.style.height = 'auto';
+    sendBtn.disabled = true;
+    
+    // Check if default welcome exists and remove it visually
+    const defaultWelcome = document.querySelector('.message');
+    const hList = document.getElementById('historyList');
+    if (defaultWelcome && hList && hList.childNodes.length === 0) { defaultWelcome.remove(); }
+    
+    addMsg('user', text);
+    showTyping();
+
+    try {
+        const res = await fetch('/api/chat', {
+            method: 'POST', headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ session_id: currentSessionId, new_message: text })
+        });
+        const data = await res.json();
+        hideTyping();
+        if (data.reply) {
+            addMsg('bot', data.reply);
+        } else {
+            addMsg('bot', '⚠️ Error: ' + (data.error || 'Unknown'));
+        }
+        loadSessions(); // refresh title if it's the first message
+    } catch (err) {
+        hideTyping();
+        addMsg('bot', '⚠️ Connection error. Check your internet and try again.');
+    }
+
+    sendBtn.disabled = false;
+    userInput.focus();
+}
+
+// On Load
+window.addEventListener('DOMContentLoaded', async () => {
+    const params = new URLSearchParams(window.location.search);
+    const sid = params.get('session_id');
+    if (sid) {
+        await loadChatHistory(sid);
+    } else if (contextProjectId) {
+        // Automatically create a session scoped to this project
+        await createInternalSession();
+        addMsg('bot', `Namma project ku start pannalama? Unagalukku entha file pathi prechana illai enna puriyala nu sollunga.`); 
+        // Notice we injected a custom second welcome message
+    } else {
+        // Just empty normal start
+        await loadSessions();
+    }
+});
+</script>
+{% endblock %}

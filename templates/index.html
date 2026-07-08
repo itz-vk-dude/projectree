@@ -1,0 +1,552 @@
+{% extends 'base.html' %}
+{% block title %}Projectree — AI-Powered Project Discovery Platform{% endblock %}
+
+{% block head %}
+<link href="https://fonts.googleapis.com/css2?family=DM+Serif+Display:ital@0;1&family=Inter:wght@300;400;500;600;700;800;900&display=swap" rel="stylesheet">
+<style>
+/* ─── HERO ───────────────────────────────── */
+.hero-section {
+  min-height: 92vh;
+  display: flex;
+  align-items: center;
+  position: relative;
+  overflow: hidden;
+  padding: 6rem 0 4rem;
+}
+.hero-glow {
+  position: absolute;
+  inset: 0;
+  background: radial-gradient(ellipse 80% 60% at 50% 0%, rgba(45,106,79,0.25) 0%, transparent 70%),
+              radial-gradient(ellipse 40% 40% at 80% 60%, rgba(64,145,108,0.12) 0%, transparent 60%);
+  pointer-events: none;
+}
+#particles-canvas {
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  opacity: 0.45;
+}
+.hero-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
+  background: rgba(45,106,79,0.15);
+  border: 1px solid rgba(45,106,79,0.4);
+  border-radius: 50px;
+  padding: 6px 18px;
+  font-size: 0.8rem;
+  color: #95d5b2;
+  font-weight: 600;
+  letter-spacing: 1px;
+  margin-bottom: 2rem;
+}
+.hero-title {
+  font-family: 'DM Serif Display', serif;
+  font-size: clamp(3rem, 8vw, 6.5rem);
+  color: #fff;
+  line-height: 1.05;
+  letter-spacing: -2px;
+  margin-bottom: 1.5rem;
+}
+.hero-title .highlight {
+  background: linear-gradient(135deg, #40916c, #95d5b2, #d8f3dc);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+}
+.hero-sub {
+  font-size: 1.2rem;
+  color: rgba(255,255,255,0.55);
+  max-width: 600px;
+  line-height: 1.7;
+  margin-bottom: 2.5rem;
+}
+.hero-cta-group { display: flex; gap: 1rem; flex-wrap: wrap; }
+.btn-hero-primary {
+  background: linear-gradient(135deg, #2d6a4f, #40916c);
+  border: none;
+  color: #fff;
+  padding: 16px 40px;
+  border-radius: 50px;
+  font-weight: 700;
+  font-size: 1.05rem;
+  transition: all 0.3s;
+  box-shadow: 0 8px 30px rgba(45,106,79,0.4);
+  text-decoration: none;
+}
+.btn-hero-primary:hover {
+  transform: translateY(-3px);
+  box-shadow: 0 14px 40px rgba(45,106,79,0.5);
+  color: #fff;
+}
+.btn-hero-secondary {
+  background: rgba(255,255,255,0.06);
+  border: 1px solid rgba(255,255,255,0.15);
+  color: #fff;
+  padding: 16px 36px;
+  border-radius: 50px;
+  font-weight: 600;
+  font-size: 1.05rem;
+  transition: all 0.3s;
+  text-decoration: none;
+  backdrop-filter: blur(8px);
+}
+.btn-hero-secondary:hover {
+  background: rgba(255,255,255,0.1);
+  border-color: rgba(255,255,255,0.3);
+  transform: translateY(-2px);
+  color: #fff;
+}
+
+/* Stats row */
+.stat-row { display: flex; gap: 2.5rem; flex-wrap: wrap; margin-top: 3rem; }
+.stat-item { text-align: left; }
+.stat-number { font-size: 2rem; font-weight: 800; color: #fff; line-height: 1; }
+.stat-label { font-size: 0.8rem; color: rgba(255,255,255,0.4); margin-top: 2px; letter-spacing: 0.5px; }
+
+/* Hero visual card */
+.hero-visual {
+  position: relative;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
+.hero-card-float {
+  background: rgba(4,18,12,0.9);
+  border: 1px solid rgba(45,106,79,0.35);
+  border-radius: 24px;
+  padding: 2rem;
+  backdrop-filter: blur(12px);
+  box-shadow: 0 24px 60px rgba(0,0,0,0.5);
+  max-width: 380px;
+  width: 100%;
+  animation: float 6s ease-in-out infinite;
+}
+@keyframes float { 0%,100%{transform:translateY(0)} 50%{transform:translateY(-14px)} }
+.project-pill {
+  background: rgba(45,106,79,0.12);
+  border: 1px solid rgba(45,106,79,0.25);
+  border-radius: 50px;
+  padding: 8px 16px;
+  font-size: 0.8rem;
+  color: #95d5b2;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-bottom: 10px;
+  transition: all 0.2s;
+}
+.project-pill:hover { background: rgba(45,106,79,0.25); transform: translateX(4px); }
+.pill-dot { width:8px; height:8px; border-radius:50%; }
+.pill-dot.iot { background:#22c55e; }
+.pill-dot.web { background:#3b82f6; }
+.pill-dot.ai { background:#a855f7; }
+.pill-dot.sec { background:#ef4444; }
+
+/* ─── FEATURES SECTION ───────────────────── */
+.features-section { padding: 6rem 0; }
+.section-label {
+  font-size: 0.75rem;
+  color: #40916c;
+  font-weight: 700;
+  letter-spacing: 3px;
+  text-transform: uppercase;
+  margin-bottom: 1rem;
+}
+.section-title {
+  font-family: 'DM Serif Display', serif;
+  font-size: clamp(2rem, 4vw, 3rem);
+  color: #fff;
+  margin-bottom: 1rem;
+}
+.feature-card {
+  background: rgba(4,18,12,0.6);
+  border: 1px solid rgba(45,106,79,0.2);
+  border-radius: 20px;
+  padding: 2rem;
+  height: 100%;
+  transition: all 0.3s;
+  position: relative;
+  overflow: hidden;
+}
+.feature-card::before {
+  content: '';
+  position: absolute;
+  top: 0; left: 0; right: 0;
+  height: 2px;
+  background: linear-gradient(90deg, transparent, rgba(45,106,79,0.6), transparent);
+  transform: scaleX(0);
+  transition: transform 0.3s;
+}
+.feature-card:hover::before { transform: scaleX(1); }
+.feature-card:hover {
+  border-color: rgba(45,106,79,0.4);
+  transform: translateY(-6px);
+  box-shadow: 0 20px 50px rgba(0,0,0,0.3);
+}
+.feature-icon {
+  font-size: 2.2rem;
+  margin-bottom: 1.25rem;
+  display: block;
+}
+.feature-card h5 {
+  color: #fff;
+  font-weight: 700;
+  font-size: 1.1rem;
+  margin-bottom: 0.75rem;
+}
+.feature-card p { color: rgba(255,255,255,0.5); font-size: 0.9rem; line-height: 1.6; margin: 0; }
+
+/* ─── DOMAINS SECTION ───────────────────── */
+.domains-section { padding: 4rem 0 6rem; }
+.domain-card {
+  background: rgba(4,18,12,0.5);
+  border: 1px solid rgba(255,255,255,0.06);
+  border-radius: 16px;
+  padding: 1.75rem 1.5rem;
+  text-align: center;
+  text-decoration: none;
+  display: block;
+  transition: all 0.3s;
+  height: 100%;
+}
+.domain-card:hover {
+  border-color: rgba(45,106,79,0.5);
+  background: rgba(45,106,79,0.1);
+  transform: translateY(-4px);
+  box-shadow: 0 12px 30px rgba(0,0,0,0.3);
+}
+.domain-icon { font-size: 2.5rem; margin-bottom: 0.75rem; display: block; }
+.domain-name { color: #fff; font-weight: 600; font-size: 0.95rem; }
+.domain-count { color: rgba(255,255,255,0.35); font-size: 0.75rem; margin-top: 4px; }
+
+/* ─── HOW IT WORKS ───────────────────────── */
+.how-section { padding: 6rem 0; background: rgba(0,0,0,0.15); border-top: 1px solid rgba(255,255,255,0.04); border-bottom: 1px solid rgba(255,255,255,0.04); }
+.step-number {
+  width: 48px; height: 48px;
+  background: linear-gradient(135deg, #2d6a4f, #40916c);
+  border-radius: 50%;
+  display: flex; align-items: center; justify-content: center;
+  font-weight: 800; color: #fff; font-size: 1.1rem;
+  margin: 0 auto 1.25rem;
+  box-shadow: 0 4px 15px rgba(45,106,79,0.4);
+}
+.step-card { text-align: center; padding: 1.5rem 1rem; }
+.step-title { color: #fff; font-weight: 700; margin-bottom: 0.5rem; }
+.step-desc { color: rgba(255,255,255,0.45); font-size: 0.9rem; line-height: 1.6; }
+.step-connector {
+  flex: 1;
+  height: 1px;
+  background: linear-gradient(90deg, transparent, rgba(45,106,79,0.4), transparent);
+  margin: auto 0.5rem;
+  display: none;
+}
+@media(min-width:768px){ .step-connector { display: block; } }
+
+/* ─── CTA SECTION ───────────────────────── */
+.cta-section {
+  padding: 6rem 0;
+  text-align: center;
+}
+.cta-box {
+  background: linear-gradient(135deg, rgba(45,106,79,0.2), rgba(64,145,108,0.1));
+  border: 1px solid rgba(45,106,79,0.3);
+  border-radius: 28px;
+  padding: 4rem 2rem;
+  position: relative;
+  overflow: hidden;
+}
+.cta-box::before {
+  content: '';
+  position: absolute;
+  top: -50%; left: 50%;
+  transform: translateX(-50%);
+  width: 600px; height: 300px;
+  background: radial-gradient(ellipse, rgba(45,106,79,0.2), transparent);
+  pointer-events: none;
+}
+</style>
+{% endblock %}
+
+{% block content %}
+
+<!-- Hero Section -->
+<section class="hero-section">
+  <div class="hero-glow"></div>
+  <canvas id="particles-canvas"></canvas>
+
+  <div class="container position-relative">
+    <div class="row align-items-center g-5">
+      <!-- Left: Copy -->
+      <div class="col-lg-6">
+        <div class="hero-badge">
+          <span style="width:7px;height:7px;background:#22c55e;border-radius:50%;animation:pulse-dot 2s infinite;display:inline-block;"></span>
+          AI-Powered · {{ total_projects }}+ Projects Available
+        </div>
+
+        <h1 class="hero-title">
+          Build Real<br>
+          <span class="highlight">Projects.</span><br>
+          Grow Your<br>Career.
+        </h1>
+
+        <p class="hero-sub">
+          Stop guessing what to build. Our AI-powered engine matches you with the perfect project based on your skills, interests, and goals — with a full expert guide from scratch to deployment.
+        </p>
+
+        <div class="hero-cta-group">
+          <a href="/quiz" class="btn-hero-primary">🚀 Find My Project</a>
+          <a href="/ai_form" class="btn-hero-secondary">🤖 AI Project Ideas</a>
+        </div>
+
+        <div class="stat-row">
+          <div class="stat-item">
+            <div class="stat-number">{{ total_projects }}+</div>
+            <div class="stat-label">Projects</div>
+          </div>
+          <div class="stat-item" style="border-left:1px solid rgba(255,255,255,0.08);padding-left:2rem;">
+            <div class="stat-number">6</div>
+            <div class="stat-label">Domains</div>
+          </div>
+          <div class="stat-item" style="border-left:1px solid rgba(255,255,255,0.08);padding-left:2rem;">
+            <div class="stat-number">AI</div>
+            <div class="stat-label">Full Guides</div>
+          </div>
+          <div class="stat-item" style="border-left:1px solid rgba(255,255,255,0.08);padding-left:2rem;">
+            <div class="stat-number">100%</div>
+            <div class="stat-label">Free</div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Right: Floating Card -->
+      <div class="col-lg-6 hero-visual d-none d-lg-flex">
+        <div class="hero-card-float">
+          <div class="d-flex align-items-center gap-2 mb-3">
+            <span class="text-success fw-bold small" style="letter-spacing:2px;font-size:0.7rem;">AI MATCHING YOUR PROJECTS</span>
+          </div>
+
+          <div class="project-pill"><span class="pill-dot iot"></span> Smart Weather Station with ESP32</div>
+          <div class="project-pill"><span class="pill-dot web"></span> Full-Stack E-Commerce with React</div>
+          <div class="project-pill"><span class="pill-dot ai"></span> Image Classification with TensorFlow</div>
+          <div class="project-pill"><span class="pill-dot sec"></span> Penetration Testing Toolkit</div>
+
+          <hr style="border-color:rgba(255,255,255,0.06);margin:1rem 0;">
+
+          <div class="d-flex justify-content-between align-items-center">
+            <div>
+              <div class="text-white fw-bold small">Your Match Score</div>
+              <div class="text-success" style="font-size:1.4rem;font-weight:800;">96%</div>
+            </div>
+            <a href="/quiz" class="btn btn-success btn-sm rounded-pill px-4" style="font-weight:600;">Get Mine →</a>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- How It Works -->
+<section class="how-section">
+  <div class="container">
+    <div class="text-center mb-5">
+      <div class="section-label">HOW IT WORKS</div>
+      <h2 class="section-title">From Zero to Deployed in 4 Steps</h2>
+    </div>
+    <div class="d-flex align-items-start justify-content-center flex-wrap flex-md-nowrap gap-0">
+      <div class="step-card col-md-3">
+        <div class="step-number">1</div>
+        <div class="step-title">Take the Quiz</div>
+        <div class="step-desc">Answer quick questions about your skills and interests</div>
+      </div>
+      <div class="step-connector mt-5"></div>
+      <div class="step-card col-md-3">
+        <div class="step-number">2</div>
+        <div class="step-title">Get Matched</div>
+        <div class="step-desc">Our ML engine finds the perfect project for your DNA</div>
+      </div>
+      <div class="step-connector mt-5"></div>
+      <div class="step-card col-md-3">
+        <div class="step-number">3</div>
+        <div class="step-title">Read the Guide</div>
+        <div class="step-desc">Get a complete AI-generated masterclass with all code</div>
+      </div>
+      <div class="step-connector mt-5"></div>
+      <div class="step-card col-md-3">
+        <div class="step-number">4</div>
+        <div class="step-title">Deploy & Grow</div>
+        <div class="step-desc">Ship to production and earn XP in your Forest</div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- Features Section -->
+<section class="features-section">
+  <div class="container">
+    <div class="text-center mb-5">
+      <div class="section-label">PLATFORM FEATURES</div>
+      <h2 class="section-title">Everything You Need to Build</h2>
+      <p class="text-white-50" style="max-width:550px;margin:0 auto;">One platform. Every tool a developer needs — from idea to deployment.</p>
+    </div>
+    <div class="row g-4">
+      <div class="col-md-4">
+        <div class="feature-card">
+          <span class="feature-icon">🧠</span>
+          <h5>AI Masterclass Guide</h5>
+          <p>Get a complete, beginner-friendly guide generated by AI. Full code, pin diagrams, folder structure, and deployment steps.</p>
+        </div>
+      </div>
+      <div class="col-md-4">
+        <div class="feature-card">
+          <span class="feature-icon">🔌</span>
+          <h5>IoT Pin Diagrams</h5>
+          <p>Hardware projects come with exact pin connections, component tables, and embedded YouTube links to watch wiring videos.</p>
+        </div>
+      </div>
+      <div class="col-md-4">
+        <div class="feature-card">
+          <span class="feature-icon">🤖</span>
+          <h5>Floating AI Assistant</h5>
+          <p>Stuck on a bug? Use the on-page Study Assistant that knows your project context and answers in real-time.</p>
+        </div>
+      </div>
+      <div class="col-md-4">
+        <div class="feature-card">
+          <span class="feature-icon">📄</span>
+          <h5>Export to PDF</h5>
+          <p>One-click export your entire masterclass guide to a beautiful PDF to read offline or share with your team.</p>
+        </div>
+      </div>
+      <div class="col-md-4">
+        <div class="feature-card">
+          <span class="feature-icon">🌳</span>
+          <h5>XP & Forest System</h5>
+          <p>Earn XP for every step you complete. Level up and grow your personal Forest — a visual map of your progress.</p>
+        </div>
+      </div>
+      <div class="col-md-4">
+        <div class="feature-card">
+          <span class="feature-icon">🏆</span>
+          <h5>Badges & Achievements</h5>
+          <p>Unlock special badges for streaks, milestones, and completed projects. Build a portfolio that proves your skills.</p>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- Domain Categories -->
+<section class="domains-section">
+  <div class="container">
+    <div class="text-center mb-5">
+      <div class="section-label">EXPLORE BY DOMAIN</div>
+      <h2 class="section-title">Find Projects In Your Field</h2>
+    </div>
+    <div class="row g-3">
+      <div class="col-6 col-md-4 col-lg-2">
+        <a href="/category/Web" class="domain-card">
+          <span class="domain-icon">🌐</span>
+          <div class="domain-name">Web Dev</div>
+          <div class="domain-count">Full-Stack Projects</div>
+        </a>
+      </div>
+      <div class="col-6 col-md-4 col-lg-2">
+        <a href="/category/AI" class="domain-card">
+          <span class="domain-icon">🤖</span>
+          <div class="domain-name">AI / ML</div>
+          <div class="domain-count">Deep Learning & NLP</div>
+        </a>
+      </div>
+      <div class="col-6 col-md-4 col-lg-2">
+        <a href="/category/IoT" class="domain-card">
+          <span class="domain-icon">🔌</span>
+          <div class="domain-name">IoT</div>
+          <div class="domain-count">Arduino, ESP32, Pi</div>
+        </a>
+      </div>
+      <div class="col-6 col-md-4 col-lg-2">
+        <a href="/category/Security" class="domain-card">
+          <span class="domain-icon">🔐</span>
+          <div class="domain-name">Security</div>
+          <div class="domain-count">Ethical Hacking</div>
+        </a>
+      </div>
+      <div class="col-6 col-md-4 col-lg-2">
+        <a href="/category/Data" class="domain-card">
+          <span class="domain-icon">📊</span>
+          <div class="domain-name">Data Science</div>
+          <div class="domain-count">Analytics & Viz</div>
+        </a>
+      </div>
+      <div class="col-6 col-md-4 col-lg-2">
+        <a href="/category/Blockchain" class="domain-card">
+          <span class="domain-icon">🔗</span>
+          <div class="domain-name">Blockchain</div>
+          <div class="domain-count">Web3 & DeFi</div>
+        </a>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- CTA Section -->
+<section class="cta-section">
+  <div class="container">
+    <div class="cta-box">
+      <div class="section-label mb-3">READY TO START?</div>
+      <h2 class="section-title mb-3">Your First Project is Waiting</h2>
+      <p class="text-white-50 mb-4" style="max-width:500px;margin:0 auto 2rem;">Take the 2-minute quiz and let our AI match you with the perfect project, complete with a full expert guide.</p>
+      <div class="d-flex gap-3 justify-content-center flex-wrap">
+        <a href="/quiz" class="btn-hero-primary">🚀 Start the Quiz</a>
+        <a href="/chat" class="btn-hero-secondary">💬 Chat with AI</a>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- Particle Canvas Script -->
+<script>
+(function() {
+  const canvas = document.getElementById('particles-canvas');
+  const ctx = canvas.getContext('2d');
+  let particles = [];
+
+  function resize() {
+    canvas.width = window.innerWidth;
+    canvas.height = window.innerHeight;
+  }
+  resize();
+  window.addEventListener('resize', resize);
+
+  for (let i = 0; i < 60; i++) {
+    particles.push({
+      x: Math.random() * canvas.width,
+      y: Math.random() * canvas.height,
+      r: Math.random() * 1.5 + 0.3,
+      vx: (Math.random() - 0.5) * 0.3,
+      vy: (Math.random() - 0.5) * 0.3,
+      alpha: Math.random() * 0.5 + 0.1
+    });
+  }
+
+  function animate() {
+    ctx.clearRect(0, 0, canvas.width, canvas.height);
+    particles.forEach(p => {
+      p.x += p.vx;
+      p.y += p.vy;
+      if (p.x < 0) p.x = canvas.width;
+      if (p.x > canvas.width) p.x = 0;
+      if (p.y < 0) p.y = canvas.height;
+      if (p.y > canvas.height) p.y = 0;
+      ctx.beginPath();
+      ctx.arc(p.x, p.y, p.r, 0, Math.PI * 2);
+      ctx.fillStyle = `rgba(149, 213, 178, ${p.alpha})`;
+      ctx.fill();
+    });
+    requestAnimationFrame(animate);
+  }
+  animate();
+})();
+</script>
+{% endblock %}

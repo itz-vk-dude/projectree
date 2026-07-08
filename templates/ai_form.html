@@ -1,0 +1,233 @@
+{% extends 'base.html' %}
+{% block title %}AI Project Generator — Projectree{% endblock %}
+
+{% block head %}
+<link href="https://fonts.googleapis.com/css2?family=DM+Serif+Display:ital@0;1&family=DM+Sans:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+.ai-hero { padding: 3rem 0 2rem; text-align: center; }
+.ai-form-card {
+  background: rgba(10, 25, 15, 0.7);
+  border: 1px solid rgba(45, 106, 79, 0.4);
+  border-radius: 24px;
+  padding: 2.5rem;
+  max-width: 680px;
+  margin: 0 auto 3rem;
+}
+.form-label-custom {
+  color: #95d5b2;
+  font-size: 0.78rem;
+  font-weight: 600;
+  letter-spacing: 2px;
+  text-transform: uppercase;
+  margin-bottom: 8px;
+  display: block;
+}
+.form-select-custom, .form-control-custom {
+  background: rgba(4, 14, 9, 0.8) !important;
+  border: 1px solid rgba(45, 106, 79, 0.35) !important;
+  border-radius: 12px !important;
+  color: #e8f5ee !important;
+  padding: 12px 16px !important;
+  font-size: 0.92rem !important;
+  width: 100%;
+  transition: border-color 0.2s;
+}
+.form-select-custom:focus, .form-control-custom:focus {
+  outline: none !important;
+  border-color: rgba(149, 213, 178, 0.6) !important;
+  box-shadow: 0 0 0 3px rgba(45, 106, 79, 0.15) !important;
+  background: rgba(4, 14, 9, 0.95) !important;
+}
+/* Multi-select styling */
+select[multiple].form-select-custom {
+  height: auto;
+  min-height: 160px;
+  padding: 8px !important;
+}
+select[multiple].form-select-custom option {
+  padding: 8px 12px;
+  border-radius: 8px;
+  margin: 2px 0;
+  cursor: pointer;
+  color: #e8f5ee;
+  background: transparent;
+}
+select[multiple].form-select-custom option:checked {
+  background: linear-gradient(90deg, #2d6a4f, #40916c) !important;
+  color: #d8f3dc;
+}
+select[multiple].form-select-custom option:hover {
+  background: rgba(45, 106, 79, 0.3) !important;
+}
+.hint-text {
+  font-size: 0.73rem;
+  color: rgba(255,255,255,0.3);
+  margin-top: 6px;
+}
+.btn-generate {
+  width: 100%;
+  background: linear-gradient(135deg, #2d6a4f, #40916c);
+  color: #d8f3dc;
+  border: none;
+  border-radius: 14px;
+  padding: 14px 28px;
+  font-weight: 700;
+  font-size: 1rem;
+  letter-spacing: 0.5px;
+  cursor: pointer;
+  transition: all 0.25s;
+  margin-top: 0.5rem;
+}
+.btn-generate:hover {
+  background: linear-gradient(135deg, #40916c, #95d5b2);
+  color: #040d0a;
+  transform: translateY(-2px);
+  box-shadow: 0 8px 28px rgba(45, 106, 79, 0.4);
+}
+.tech-tags { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 10px; }
+.tech-tag {
+  background: rgba(45,106,79,0.15);
+  border: 1px solid rgba(45,106,79,0.3);
+  border-radius: 50px;
+  padding: 4px 14px;
+  font-size: 0.78rem;
+  color: #95d5b2;
+  cursor: pointer;
+  transition: all 0.2s;
+  user-select: none;
+}
+.tech-tag:hover, .tech-tag.active {
+  background: rgba(45,106,79,0.4);
+  border-color: #95d5b2;
+  color: #d8f3dc;
+}
+.divider { border-color: rgba(45,106,79,0.2); margin: 1.75rem 0; }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="container py-4 mt-1">
+
+  <!-- Hero -->
+  <div class="ai-hero">
+    <p class="text-success small fw-bold mb-1" style="letter-spacing:3px;">POWERED BY AI</p>
+    <h1 class="display-5 fw-bold text-white mb-2" style="font-family:'DM Serif Display',serif;">
+      🚀 AI Project Idea <em style="color:#95d5b2;">Generator</em>
+    </h1>
+    <p class="text-white-50 mx-auto" style="max-width:480px; font-size:0.95rem;">
+      Tell us your domain, level and tech stack — we'll generate 5 tailored project ideas just for you.
+    </p>
+  </div>
+
+  <!-- Form Card -->
+  <div class="ai-form-card">
+    <form method="POST" action="/generate_ai" id="aiForm">
+      <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+
+      <!-- Row 1: Domain + Level -->
+      <div class="row g-4 mb-4">
+        <div class="col-md-6">
+          <label class="form-label-custom">🎯 Domain</label>
+          <select name="domain" required class="form-select-custom">
+            <option value="" disabled selected>Select a domain…</option>
+            <option>Artificial Intelligence</option>
+            <option>Machine Learning</option>
+            <option>Deep Learning</option>
+            <option>Web Development</option>
+            <option>Cybersecurity</option>
+            <option>IoT</option>
+            <option>Data Science</option>
+            <option>Blockchain</option>
+            <option>Cloud Computing</option>
+          </select>
+        </div>
+        <div class="col-md-6">
+          <label class="form-label-custom">📊 Difficulty Level</label>
+          <select name="level" class="form-select-custom">
+            <option>Beginner</option>
+            <option>Intermediate</option>
+            <option>Advanced</option>
+          </select>
+        </div>
+      </div>
+
+      <hr class="divider">
+
+      <!-- Technologies — Quick Tags -->
+      <div class="mb-4">
+        <label class="form-label-custom">⚙️ Technologies</label>
+        <p class="hint-text mb-3">Click to select one or more technologies</p>
+
+        <div class="tech-tags" id="techTags">
+          <span class="tech-tag" data-value="Python">Python</span>
+          <span class="tech-tag" data-value="JavaScript">JavaScript</span>
+          <span class="tech-tag" data-value="React">React</span>
+          <span class="tech-tag" data-value="Flask">Flask</span>
+          <span class="tech-tag" data-value="Django">Django</span>
+          <span class="tech-tag" data-value="TensorFlow">TensorFlow</span>
+          <span class="tech-tag" data-value="PyTorch">PyTorch</span>
+          <span class="tech-tag" data-value="OpenCV">OpenCV</span>
+          <span class="tech-tag" data-value="MySQL">MySQL</span>
+          <span class="tech-tag" data-value="MongoDB">MongoDB</span>
+          <span class="tech-tag" data-value="Node.js">Node.js</span>
+          <span class="tech-tag" data-value="Docker">Docker</span>
+          <span class="tech-tag" data-value="FastAPI">FastAPI</span>
+          <span class="tech-tag" data-value="TypeScript">TypeScript</span>
+        </div>
+
+        <!-- Hidden inputs injected by JS -->
+        <div id="hiddenTechInputs"></div>
+        <p class="hint-text mt-3" id="selectedCount">0 selected</p>
+      </div>
+
+      <hr class="divider">
+
+      <!-- Submit -->
+      <button type="submit" class="btn-generate" id="submitBtn">
+        <span id="btnText">✨ Generate Project Ideas</span>
+        <span id="btnLoader" style="display:none;">⏳ Generating…</span>
+      </button>
+
+    </form>
+  </div>
+</div>
+
+<script>
+const tags = document.querySelectorAll('.tech-tag');
+const hiddenContainer = document.getElementById('hiddenTechInputs');
+const countEl = document.getElementById('selectedCount');
+const selected = new Set();
+
+tags.forEach(tag => {
+  tag.addEventListener('click', () => {
+    const val = tag.dataset.value;
+    if (selected.has(val)) {
+      selected.delete(val);
+      tag.classList.remove('active');
+    } else {
+      selected.add(val);
+      tag.classList.add('active');
+    }
+    // Rebuild hidden inputs
+    hiddenContainer.innerHTML = '';
+    selected.forEach(v => {
+      const inp = document.createElement('input');
+      inp.type = 'hidden';
+      inp.name = 'technologies';
+      inp.value = v;
+      hiddenContainer.appendChild(inp);
+    });
+    countEl.textContent = selected.size === 0
+      ? '0 selected'
+      : `${selected.size} selected: ${[...selected].join(', ')}`;
+  });
+});
+
+// Loading state on submit
+document.getElementById('aiForm').addEventListener('submit', () => {
+  document.getElementById('btnText').style.display = 'none';
+  document.getElementById('btnLoader').style.display = 'inline';
+  document.getElementById('submitBtn').disabled = true;
+});
+</script>
+{% endblock %}

@@ -1,0 +1,14 @@
+{% extends 'base.html' %}
+{% block title %}500 — Server Error{% endblock %}
+
+{% block content %}
+<div class="container d-flex align-items-center justify-content-center" style="min-height:75vh;">
+    <div class="text-center animate__animated animate__fadeIn">
+        <div style="font-size:6rem;">🔥</div>
+        <h1 class="display-3 fw-bold text-danger">500</h1>
+        <h2 class="text-white mb-3">Something went wrong</h2>
+        <p class="text-white-50 mb-4">The server hit an unexpected error. Try again in a moment.</p>
+        <a href="/" class="btn btn-success rounded-pill px-5">← Back to Home</a>
+    </div>
+</div>
+{% endblock %}

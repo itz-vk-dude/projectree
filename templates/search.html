@@ -1,0 +1,63 @@
+{% extends 'base.html' %}
+{% block title %}Search "{{ query }}" — Projectree{% endblock %}
+
+{% block content %}
+<div class="container py-5">
+
+    <!-- Search Header -->
+    <div class="mb-5 animate__animated animate__fadeIn">
+        <h2 class="text-white fw-bold mb-3">🔍 Search Results</h2>
+        <form action="/search" method="get" class="d-flex gap-2" style="max-width:500px;">
+            <input name="q" class="form-control" placeholder="Search projects…"
+                   value="{{ query }}" autofocus>
+            <button class="btn btn-success px-4 rounded-pill">Search</button>
+        </form>
+        {% if query %}
+        <p class="text-white-50 small mt-2">
+            {{ projects|length }} result{{ 's' if projects|length != 1 else '' }} for
+            <strong class="text-white">"{{ query }}"</strong>
+        </p>
+        {% endif %}
+    </div>
+
+    <!-- Results -->
+    {% if projects %}
+    <div class="row g-4">
+        {% for p in projects %}
+        <div class="col-lg-6 animate__animated animate__fadeInUp" style="animation-delay:{{ loop.index0 * 0.05 }}s;">
+            <div class="glass-card p-4 h-100 d-flex flex-column">
+                <div class="d-flex justify-content-between align-items-center mb-2">
+                    <span class="badge bg-success bg-opacity-10 text-success border border-success">{{ p.language }}</span>
+                    <span class="badge bg-dark border border-secondary text-white-50 small">{{ p.level }}</span>
+                </div>
+                <h5 class="text-white fw-bold mb-2">{{ p.title }}</h5>
+                <p class="text-white-50 small flex-grow-1">
+                    {{ (p.description or '')[:150] }}{% if (p.description or '')|length > 150 %}…{% endif %}
+                </p>
+                <div class="d-flex gap-2 mt-3 flex-wrap">
+                    <a href="/project/{{ p.id }}" class="btn btn-success btn-sm rounded-pill px-3">View →</a>
+                    <a href="/explain/{{ p.id }}" class="btn btn-outline-success btn-sm rounded-pill px-3">🤖 Explain</a>
+                    <a href="/start/{{ p.id }}"   class="btn btn-outline-secondary btn-sm rounded-pill px-3">+ Start</a>
+                </div>
+            </div>
+        </div>
+        {% endfor %}
+    </div>
+
+    {% elif query %}
+    <div class="glass-card p-5 text-center">
+        <div class="fs-1 mb-3">🌿</div>
+        <h5 class="text-white mb-2">No projects found for "{{ query }}"</h5>
+        <p class="text-white-50 small mb-4">Try a different keyword like "Python", "AI", or "Beginner"</p>
+        <a href="/quiz" class="btn btn-success rounded-pill px-5">Try the Discovery Quiz</a>
+    </div>
+
+    {% else %}
+    <div class="glass-card p-5 text-center">
+        <div class="fs-1 mb-3">🔍</div>
+        <p class="text-white-50">Enter a keyword above to search projects by title, language, or description.</p>
+    </div>
+    {% endif %}
+
+</div>
+{% endblock %}

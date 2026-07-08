@@ -1,0 +1,17 @@
+{% extends 'base.html' %}
+{% block title %}404 — Page Not Found{% endblock %}
+
+{% block content %}
+<div class="container d-flex align-items-center justify-content-center" style="min-height:75vh;">
+    <div class="text-center animate__animated animate__fadeIn">
+        <div style="font-size:6rem;">🌿</div>
+        <h1 class="display-3 fw-bold text-success">404</h1>
+        <h2 class="text-white mb-3">This branch doesn't exist</h2>
+        <p class="text-white-50 mb-4">The page you're looking for has been pruned from the forest.</p>
+        <div class="d-flex gap-3 justify-content-center flex-wrap">
+            <a href="/" class="btn btn-success rounded-pill px-5">← Back to Home</a>
+            <a href="/quiz" class="btn btn-outline-success rounded-pill px-5">Take the Quiz</a>
+        </div>
+    </div>
+</div>
+{% endblock %}

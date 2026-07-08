@@ -1,0 +1,62 @@
+{% extends 'base.html' %}
+{% block title %}AI Explanation — {{ project.title }}{% endblock %}
+
+{% block content %}
+<div class="container py-5">
+    <div class="row justify-content-center">
+        <div class="col-lg-8">
+            <div class="glass-card p-4 p-md-5 animate__animated animate__fadeIn">
+
+                <!-- Header -->
+                <div class="d-flex align-items-center gap-3 mb-4">
+                    <div class="fs-2">🤖</div>
+                    <div>
+                        <h2 class="text-white fw-bold mb-1">AI Explanation</h2>
+                        <p class="text-success small mb-0 fw-semibold">{{ project.title }}</p>
+                    </div>
+                </div>
+
+                <!-- Meta -->
+                <div class="d-flex gap-2 flex-wrap mb-4">
+                    <span class="badge bg-success bg-opacity-10 text-success border border-success">{{ project.language }}</span>
+                    <span class="badge bg-dark border border-secondary text-white-50">{{ project.level }}</span>
+                    <span class="badge bg-dark border border-secondary text-white-50">{{ project.interest }}</span>
+                </div>
+
+                <!-- AI Response Card -->
+                <div class="p-4 rounded-4 mb-4" style="background:rgba(45,106,79,0.07);border:1px solid rgba(45,106,79,0.25);">
+                    {% if 'Error' in explanation or 'disabled' in explanation or '⚠' in explanation %}
+                        <div class="d-flex gap-3 align-items-start">
+                            <span class="fs-4">⚠️</span>
+                            <div>
+                                <p class="text-warning mb-0">{{ explanation }}</p>
+                            </div>
+                        </div>
+                    {% else %}
+                        <div class="text-white-50" style="line-height:1.9; white-space:pre-wrap; font-size:1rem;">{{ explanation }}</div>
+                    {% endif %}
+                </div>
+
+                <!-- Powered By -->
+                <p class="text-white-50 small text-end mb-4">
+                    ⚡ Powered by Mistral 7B via OpenRouter
+                </p>
+
+                <!-- Actions -->
+                <div class="d-flex gap-3 flex-wrap">
+                    <a href="/project/{{ project.id }}" class="btn btn-success rounded-pill px-4">
+                        View Full Details →
+                    </a>
+                    <a href="/start/{{ project.id }}" class="btn btn-outline-success rounded-pill px-4">
+                        🚀 Start This Project
+                    </a>
+                    <a href="javascript:history.back()" class="btn btn-outline-secondary rounded-pill px-4">
+                        ← Back
+                    </a>
+                </div>
+
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
